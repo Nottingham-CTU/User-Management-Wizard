@@ -1,0 +1,128 @@
+{
+	"name" : "User Management Wizard",
+	"namespace" : "Nottingham\\UserManageWiz",
+	"description" : "Provide a simple tool to allow a defined set of users to add new users to the system and/or specific projects.",
+	"permissions" : [
+		"redcap_every_page_top"
+	],
+	"framework-version" : 6,
+	"compatibility" : { "redcap-version-min" : "10.6.11", "php-version-min" : "7.4.0" },
+	"enable-every-page-hooks-on-system-pages" : true,
+	"authors" : [
+		{
+			"name": "Richard Dooley",
+			"email": "richard.dooley@nottingham.ac.uk",
+			"institution": "University of Nottingham"
+		}
+	],
+	"system-settings" : [
+		{
+			"key" : "s",
+			"name" : "<script type=\"text/javascript\">$(function(){$('tr[field=enabled],tr[field=discoverable-in-project],tr[field=user-activate-permission],tr[field=s]').hide();$('tr[field=admin-user] td:first-child').css('width','33%')})</script>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "header1",
+			"name" : "<b>User Access</b>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "wizard-users",
+			"name" : "Users allowed to access the wizard<br>(one username per line)",
+			"type" : "textarea"
+		},
+		{
+			"key" : "header2",
+			"name" : "<b>Wizard Configuration</b>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "admin-user",
+			"name" : "Administrator username",
+			"type" : "text"
+		},
+		{
+			"key" : "internal-user-regex",
+			"name" : "Regular expression of internal usernames",
+			"type" : "text"
+		},
+		{
+			"key" : "internal-email-regex",
+			"name" : "Regular expression of internal email addresses",
+			"type" : "text"
+		},
+		{
+			"key" : "curl-ca-bundle",
+			"name" : "File path of cURL CA bundle",
+			"type" : "text"
+		},
+		{
+			"key" : "header3",
+			"name" : "<b>Default Project Settings</b>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "default-allowed-roles",
+			"name" : "Project role names to allow users to be assigned to by default<br>(one per line)",
+			"type" : "textarea"
+		},
+		{
+			"key" : "default-lookup-desc",
+			"name" : "Define a lookup project/condition/fields to lookup default project metadata:",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "default-lookup-project",
+			"name" : "Lookup project",
+			"type" : "project-id"
+		},
+		{
+			"key" : "default-lookup-condition",
+			"name" : "Lookup condition logic<br>(enter ? as placeholder for project ID)",
+			"type" : "textarea",
+			"branchingLogic" : { "field" : "default-lookup-project", "op" : "<>", "value" : "" }
+		},
+		{
+			"key" : "default-lookup-email",
+			"name" : "Lookup notification email field name",
+			"type" : "text",
+			"branchingLogic" : { "field" : "default-lookup-project", "op" : "<>", "value" : "" }
+		},
+		{
+			"key" : "header4",
+			"name" : "<b>Specific Project Settings</b>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "project",
+			"name" : "Specific Project Settings",
+			"type" : "sub_settings",
+			"repeatable" : true,
+			"sub_settings" : [
+				{
+					"key" : "project-id",
+					"name" : "Project",
+					"type" : "project-id"
+				},
+				{
+					"key" : "project-exclude",
+					"name" : "Exclude this project",
+					"type" : "checkbox",
+					"branchingLogic" : { "field" : "project-id", "op" : "<>", "value" : "" }
+				},
+				{
+					"key" : "project-allowed-roles",
+					"name" : "Project role names to allow users to be assigned to<br>(one per line)",
+					"type" : "textarea",
+					"branchingLogic" : { "field" : "project-id", "op" : "<>", "value" : "" }
+				},
+				{
+					"key" : "project-email",
+					"name" : "Notification email address for project",
+					"type" : "email",
+					"branchingLogic" : { "field" : "project-id", "op" : "<>", "value" : "" }
+				}
+			]
+		}
+	]
+}
