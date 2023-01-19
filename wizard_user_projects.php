@@ -51,6 +51,23 @@ for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
 		$projectNotifyEmail = $projectSettings['project-email'][$i];
 	}
 }
+// If the wizard user is not an administrator, automatically exclude research projects which the
+// wizard user does not have access to.
+if ( SUPER_USER != 1 )
+{
+	$queryUserExclude = $module->query( 'SELECT project_id FROM redcap_projects ' .
+	                                    'WHERE purpose = 2 AND project_id NOT IN ' .
+	                                    '( SELECT project_id FROM redcap_user_rights ' .
+	                                    'WHERE username = ? )', [ USERID ] );
+	while ( $resUserExclude = $queryUserExclude->fetch_assoc() )
+	{
+		if ( ! in_array( $resUserExclude['project_id'], $excludedProjects ) )
+		{
+			$excludedProjects[] = $resUserExclude['project_id'];
+		}
+	}
+}
+// Determine the projects for which the user can be assigned an API token through the wizard.
 $projectsAllowedAPIToken = [];
 $queryAPIToken = $module->query( 'SELECT redcap_user_rights.project_id ' .
                                  'FROM redcap_user_rights LEFT JOIN redcap_user_roles ON ' .
