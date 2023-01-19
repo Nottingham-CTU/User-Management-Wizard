@@ -54,7 +54,7 @@ $(function()
 	public function isAccessAllowed()
 	{
 		$listUsers = $this->getSystemSetting( 'wizard-users' );
-		if ( $listUsers == '' || USERID == '' )
+		if ( $listUsers == '' || ! defined( 'USERID' ) || USERID == '' )
 		{
 			return false;
 		}
@@ -89,6 +89,9 @@ $(function()
 			              'SET user_sponsor = ? WHERE username = ? LIMIT 1',
 			              [ USERID, $username ] );
 		}
+		// Ensure that the user does NOT receive emails about system notifications.
+		$this->query( 'UPDATE redcap_user_information SET messaging_email_general_system = 0 ' .
+		              'WHERE username = ?', [ $username ] );
 	}
 
 
@@ -118,6 +121,9 @@ $(function()
 		curl_close( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
+		// Ensure that the user does NOT receive emails about system notifications.
+		$this->query( 'UPDATE redcap_user_information SET messaging_email_general_system = 0 ' .
+		              'WHERE username = ?', [ $username ] );
 	}
 
 
