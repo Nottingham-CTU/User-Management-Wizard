@@ -58,7 +58,8 @@ if ( SUPER_USER != 1 )
 	$queryUserExclude = $module->query( 'SELECT project_id FROM redcap_projects ' .
 	                                    'WHERE purpose = 2 AND project_id NOT IN ' .
 	                                    '( SELECT project_id FROM redcap_user_rights ' .
-	                                    'WHERE username = ? )', [ USERID ] );
+	                                    'WHERE username = ? AND ( expiration IS NULL ' .
+	                                    'OR expiration > NOW() ) )', [ USERID ] );
 	while ( $resUserExclude = $queryUserExclude->fetch_assoc() )
 	{
 		if ( ! in_array( $resUserExclude['project_id'], $excludedProjects ) )
@@ -280,6 +281,25 @@ if ( ! empty( $_POST ) )
 		// Grant the API token.
 		$module->createAPITokenForUser( $_GET['username'], $_POST['project_id'] );
 	}
+	if ( $_POST['action'] == 'set_expire' )
+	{
+		if ( SUPER_USER != 1 && $_GET['username'] == USERID )
+		{
+			echo 'Invalid request: cannot change expiration on own account.';
+			exit;
+		}
+		if ( isset( $_POST['revoke'] ) )
+		{
+			$_POST['expiration'] = date( 'Y-m-d' );
+		}
+		if ( $_POST['expiration'] == '' )
+		{
+			echo 'Invalid request: expiration date not provided.';
+			exit;
+		}
+		$module->setUserProjectExpiry( $_GET['username'],
+		                               $_POST['project_id'], $_POST['expiration'] );
+	}
 	if ( $_POST['action'] == 'update_comments' )
 	{
 		// Update the comments on the user record.
@@ -306,6 +326,7 @@ $queryAssignedProjects =
 	$module->query( 'SELECT redcap_projects.project_id, redcap_projects.app_title, ' .
 	                'redcap_projects.purpose, redcap_user_rights.role_id, ' .
 	                'redcap_user_roles.role_name, redcap_user_rights.group_id, ' .
+	                'redcap_user_rights.expiration, ' .
 	                'if( redcap_user_rights.group_id IS NULL OR redcap_user_rights.username IN ' .
 	                ' (SELECT username FROM redcap_data_access_groups_users WHERE project_id = ' .
 	                'redcap_projects.project_id AND group_id IS NULL), 1,0 ) AS access_all_dags, ' .
@@ -424,7 +445,21 @@ if ( $userNeedsAllowlist )
 <p style="color:#990000;font-weight:bold">
  Warning: This user is not in the user allowlist and may therefore be prevented from accessing
  REDCap. Please <?php echo SUPER_USER == 1 ? '' : 'ask an administrator to'; ?> check the status
- of this user in the control center.
+ of this user in the <?php echo $GLOBALS['lang']['global_07']; ?>.
+</p>
+<?php
+
+}
+
+if ( $infoUser['user_suspended_time'] != '' ||
+     ( $infoUser['user_expiration'] != '' && $infoUser['user_expiration'] < date( 'Y-m-d' ) ) )
+{
+
+?>
+<p style="color:#990000;font-weight:bold">
+ Warning: This user account is currently suspended and is therefore prevented from accessing
+ REDCap. Please <?php echo SUPER_USER == 1 ? '' : 'ask an administrator to'; ?> un-suspend this
+ user in the <?php echo $GLOBALS['lang']['global_07']; ?> if required.
 </p>
 <?php
 
@@ -581,12 +616,57 @@ foreach ( $listAssignedProjects as $infoProject )
 	elseif ( $infoProject['mobile_app'] == 1 )
 	{
 ?>
+ <p><b>Mobile app:</b> Access granted.</p>
+<?php
+	}
+
+?>
  <form method="post">
-  <p><b>Mobile app:</b> Access granted.</p>
- </form>
+  <p>
+   <b>Expiration:</b>
+<?php
+	if ( $infoProject['expiration'] == '' )
+	{
+?>
+   The user's access to this project does not expire.&nbsp;
+   <a onclick="$(this).css('display','none');$(this).next().css('display','');return false"
+     href="#">Set expiration</a>
+   <span style="display:none">
+    <br><br>
+    &nbsp;&nbsp; <input type="date" name="expiration" required>
+    <input type="submit" value="Set expiration date">
+    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
+                                   onclick="$(this).prev().prev().prop('required',false)">
+    <input type="hidden" name="action" value="set_expire">
+    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   </span>
+<?php
+	}
+	elseif ( $infoProject['expiration'] > date( 'Y-m-d' ) )
+	{
+?>
+   Access will expire on <?php echo date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.&nbsp;
+   <a onclick="$(this).css('display','none');$(this).next().css('display','');return false"
+     href="#">Change expiration</a>
+   <span style="display:none">
+    <br><br>
+    &nbsp;&nbsp; <input type="date" name="expiration">
+    <input type="submit" value="Change expiration date">
+    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately">
+    <input type="hidden" name="action" value="set_expire">
+    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   </span>
+<?php
+	}
+	else
+	{
+?>
+   Access expired on <?php echo date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.
 <?php
 	}
 ?>
+  </p>
+ </form>
 </div>
 <p>&nbsp;</p>
 <?php

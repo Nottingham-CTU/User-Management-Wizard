@@ -379,6 +379,28 @@ $(function()
 
 
 
+	// Set the user's expiry date for a project.
+	public function setUserProjectExpiry( $username, $projectID, $dateExpiry )
+	{
+		$infoUser = $this->query( 'SELECT 1 FROM redcap_user_rights ' .
+		                          'WHERE username = ? AND project_id = ?',
+		                          [ $username, $projectID ] )->fetch_assoc();
+		if ( $infoUser === null ||
+		     !preg_match( '/^2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|3[01])$/', $dateExpiry ) )
+		{
+			return;
+		}
+		$this->query( 'UPDATE redcap_user_rights SET expiration = ? ' .
+		              'WHERE username = ? AND project_id = ? LIMIT 1',
+		              [ $dateExpiry, $username, $projectID ] );
+		// Write the action to the project log.
+		\REDCap::logEvent( 'User Management Wizard',
+		                   "Access to project for user '$username' set to expire " .
+		                   "on $dateExpiry by '" . USERID . "'", null, null, null, $projectID );
+	}
+
+
+
 	// Sets the first line of the user comments field in the database to the list of research
 	// projects the user has been added to.
 	public function setUserProjectList( $username )
