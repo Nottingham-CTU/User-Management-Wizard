@@ -13,7 +13,15 @@ $showSearch = false;
 
 if ( ! empty( $_POST ) )
 {
-	if ( isset( $_POST['username'] ) ) // internal user
+	if ( isset( $_POST['project'] ) ) // project
+	{
+		if ( $_POST['project'] != '' && is_numeric( $_POST['project'] ) )
+		{
+			header( 'Location: ' . $module->getUrl( 'wizard_project_users.php?proj=' .
+			                                        rawurlencode( $_POST['project'] ) ) );
+		}
+	}
+	elseif ( isset( $_POST['username'] ) ) // internal user
 	{
 		// If user does not exist, redirect to create user.
 		if ( $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
@@ -71,6 +79,37 @@ if ( ! empty( $_POST ) )
 		while ( $infoUser = $queryUser->fetch_assoc() )
 		{
 			$listUsers[] = $infoUser;
+		}
+	}
+}
+
+if ( ! $showSearch )
+{
+	$projectSettings = [ 'project-id' => $module->getSystemSetting( 'project-id' ),
+	                     'project-exclude' => $module->getSystemSetting( 'project-exclude' ) ];
+	$excludedProjects = [];
+	for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
+	{
+		if ( $projectSettings['project-exclude'][$i] && $projectSettings['project-id'][$i] != '' )
+		{
+			$excludedProjects[] = $projectSettings['project-id'][$i];
+		}
+	}
+	$queryUserProjects = $module->query( 'SELECT project_id, app_title FROM redcap_projects ' .
+	                                     'WHERE completed_time IS NULL AND project_id NOT IN ' .
+	                                     '(SELECT project_id FROM redcap_projects_templates)' .
+	                                     ( SUPER_USER == 1 ? '' : ( ' AND purpose = 2 AND ' .
+	                                       'project_id IN ( SELECT project_id ' .
+	                                       'FROM redcap_user_rights WHERE username = ? AND ' .
+	                                       '( expiration IS NULL OR expiration > NOW() ) )' ) ) .
+	                                     ' ORDER BY if( purpose = 2, 0, 1 ), app_title',
+	                                     ( SUPER_USER == 1 ? [] : [ USERID ] ) );
+	$listUserProjects = [];
+	while ( $resUserProjects = $queryUserProjects->fetch_assoc() )
+	{
+		if ( ! in_array( $resUserProjects['project_id'], $excludedProjects ) )
+		{
+			$listUserProjects[ $resUserProjects['project_id'] ] = $resUserProjects['app_title'];
 		}
 	}
 }
@@ -186,6 +225,28 @@ else
     </form>
   </div>
 </div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>Show Project Users</h3>
+<p>&nbsp;</p>
+<form method="post">
+ <p>
+ Select project:
+  <select name="project">
+   <option></option>
+<?php
+	foreach ( $listUserProjects as $projectID => $projectName )
+	{
+?>
+   <option value="<?php echo $projectID; ?>"><?php echo htmlspecialchars( $projectName ); ?></option>
+<?php
+	}
+?>
+  </select>
+  <input type="submit" value="Go">
+ </p>
+</form>
+<p>&nbsp;</p>
 
 <script type="text/javascript">
 $(function()
@@ -196,6 +257,7 @@ $(function()
   vUserSections.css( 'padding', '10px' )
   vUserSections.css( 'border', 'solid 1px #000000' )
   vUserSections.css( 'border-radius', '10px' )
+  vUserSections.css( 'background', '#f7f7f7' )
   $('#sectionInternal').on( 'click', function()
   {
     var vSection = $('#sectionInternal')
