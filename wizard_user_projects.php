@@ -117,15 +117,15 @@ if ( ! empty( $_POST ) )
 		// Get the DAGs to add the user to.
 		$listDAGs = [];
 		$listDAGNames = [];
-		if ( isset( $_POST['dag']['*'] ) )
+		if ( isset( $_POST['dag']['*'] ) ) // no assignment (all DAGs) selected
 		{
 			if ( count( $_POST['dag'] ) > 1 || SUPER_USER != 1 )
 			{
-				echo 'Invalid request: not allowed to specify all DAGs.';
+				echo 'Invalid request: not allowed to specify no assignment / all DAGs.';
 				exit;
 			}
 		}
-		else
+		else // specific DAGs selected
 		{
 			$queryCurrentProjectDAGs =
 				$module->query( 'SELECT group_id, group_name FROM redcap_data_access_groups ' .
@@ -554,9 +554,10 @@ foreach ( $listAssignedProjects as $infoProject )
 	{
 ?>
  <p>
-  This user has been granted access to all DAGs for this project. If you want to change the DAG
-  assignment, please <?php echo SUPER_USER == 1 ? 'amend this on the project user rights page'
-                                                : 'ask an administrator to remove this access'; ?>.
+  This user has not been assigned to any specific DAGs and therefore has access to all DAGs for this
+  project. If you want to change the DAG assignment, please
+  <?php echo SUPER_USER == 1 ? 'amend this on the project user rights page'
+                             : 'ask an administrator to assign DAGs'; ?>.
  </p>
 <?php
 	}
@@ -756,7 +757,7 @@ if ( SUPER_USER == 1 )
 ?>
         vDAGOptions += '<tr class="mod-umw-trhover"><td>'
         vDAGOptions += '<input type="checkbox" name="dag[*]" value="1">'
-        vDAGOptions += '</td><td>All DAGs</td></tr>'
+        vDAGOptions += '</td><td>No Assignment (Access all DAGs)</td></tr>'
 <?php
 }
 ?>
@@ -789,7 +790,7 @@ if ( SUPER_USER == 1 )
       {
         $(this).form().find('input[name^="dag["]').each(function()
         {
-          this.setCustomValidity('All DAGs cannot be chosen in combination with specific DAGs.')
+          this.setCustomValidity('No assignment cannot be chosen in combination with specific DAGs.')
         })
       }
       else
