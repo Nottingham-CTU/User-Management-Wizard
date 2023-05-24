@@ -16,9 +16,14 @@ administrator username to be used for this here.
 When adding internal users, their username will be validated to match this regular expression.
 When adding external users, their username will be validated to not match.
 
+For example, if internal usernames consist of 2 or 3 letters followed by zero or more digits, use
+`^[a-z]{2,3}[0-9]*$`
+
 ### Regular expression of internal email addresses
 When adding external users, their email address will be validated to not match this regular
 expression.
+
+For example, to treat *@example.com* addresses as internal, use `@example\.com$`
 
 ### File path of cURL CA bundle
 Path to a file containing CA certificates to validate HTTPS requests.
