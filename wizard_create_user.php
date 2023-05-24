@@ -21,7 +21,7 @@ if ( ! empty( $_POST ) )
 		if ( ( $internalUserRegex != '' &&
 		       preg_match( "/$internalUserRegex/", $_POST['checkusername'] ) ) ||
 		     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
-		                     'username = ?', [ $_POST['username'] ] )->num_rows > 0 )
+		                     'username = ?', [ $_POST['checkusername'] ] )->num_rows > 0 )
 		{
 			echo 'false';
 			exit;
@@ -45,7 +45,7 @@ if ( ! empty( $_POST ) )
 	if ( $_POST['firstname'] == '' || $_POST['lastname'] == '' || $_POST['username'] == '' ||
 	     $_POST['email'] == '' ||
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
-		                 'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
+	                     'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
 	     ( $internalUserRegex != '' &&
 	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ||
 	       ( $userType == 'e' && preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ) )
@@ -237,7 +237,6 @@ if ( $userType == 'e' ) // external user
     delay: 150,
     select: function( event, ui ) {
       $(this).val(ui.item.value);
-      //$('#user_search_btn').click();
       return false;
     }
   })
