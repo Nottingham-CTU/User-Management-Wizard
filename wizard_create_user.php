@@ -47,8 +47,8 @@ if ( ! empty( $_POST ) )
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 		                 'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
 	     ( $internalUserRegex != '' &&
-	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/", $_POST['checkusername'] ) ) ||
-	       ( $userType == 'e' && preg_match( "/$internalUserRegex/", $_POST['checkusername'] ) ) ) )
+	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ||
+	       ( $userType == 'e' && preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ) )
 	{
 		exit;
 	}

@@ -136,6 +136,7 @@ $(function()
 		// Submit allowlist entry.
 		$curl = curl_init( self::VERSION_PATH . 'ControlCenter/user_allowlist.php' );
 		$this->configureCurl( $curl, $sessionID );
+		curl_setopt( $curl, CURLOPT_HTTPHEADER, ['X-Requested-With: XMLHttpRequest'] );
 		curl_setopt( $curl, CURLOPT_POST, true );
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'action=add&username=' . rawurlencode( $username ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
