@@ -363,8 +363,12 @@ while ( $infoProject = $queryAssignedProjects->fetch_assoc() )
 		     $infoProjectDAG['group_id'] == $infoProject['group_id'] )
 		{
 			$infoProjectDAG['active'] = 1;
+			array_unshift( $infoProject['dags'], $infoProjectDAG );
 		}
-		$infoProject['dags'][] = $infoProjectDAG;
+		else
+		{
+			$infoProject['dags'][] = $infoProjectDAG;
+		}
 	}
 	$listAssignedProjects[] = $infoProject;
 }
@@ -564,11 +568,27 @@ foreach ( $listAssignedProjects as $infoProject )
 	else
 	{
 ?>
- <p>
+ <p style="margin-bottom:5px">
   <b>DAGs:</b>
-  <a onclick="$(this).css('display','none');$(this).parent().next().css('display','');return false"
-     href="#">show DAGs</a>
+  &nbsp;
+  <a onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
+              $(this).parent().next().next().css('display','');return false"
+     href="#">Edit DAGs</a>
  </p>
+ <ul>
+<?php
+		foreach ( $infoProject['dags'] as $infoDAG )
+		{
+			if ( $infoDAG['active'] == 0 )
+			{
+				break;
+			}
+?>
+  <li><?php echo htmlspecialchars( $infoDAG['group_name'] ); ?></li>
+<?php
+		}
+?>
+ </ul>
  <form method="post" style="display:none">
   <table style="min-width:30%">
 <?php
@@ -590,7 +610,7 @@ foreach ( $listAssignedProjects as $infoProject )
 		}
 ?>
   </table>
-  <p>
+  <p style="margin-bottom:15px">
    <input type="submit" value="Update DAG assignment">
    <input type="hidden" name="action" value="update_dags">
    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
