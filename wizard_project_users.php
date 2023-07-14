@@ -51,7 +51,7 @@ $queryProjectUsers =
 	                'ur.group_id IS NULL ) ) WHERE gu.project_id = ? ) ' .
 	                'SELECT users.username, users.expiration, redcap_user_roles.role_name, ' .
 	                'redcap_data_access_groups.group_name, ui.user_firstname, ui.user_lastname, ' .
-	                'ui.user_suspended_time, ui.user_expiration FROM users ' .
+	                'ui.user_email, ui.user_suspended_time, ui.user_expiration FROM users ' .
 	                'LEFT JOIN redcap_user_roles ON users.role_id = redcap_user_roles.role_id ' .
 	                'AND redcap_user_roles.project_id = ? LEFT JOIN redcap_data_access_groups ' .
 	                'ON users.group_id = redcap_data_access_groups.group_id AND ' .
@@ -80,7 +80,9 @@ foreach ( $listProjectUsers as $infoProjectUser )
 	$inactiveUser = ( ( $infoProjectUser['user_suspended_time'] !== null &&
 	                    strtotime( $infoProjectUser['user_suspended_time'] ) < time() ) ||
 	                  ( $infoProjectUser['user_expiration'] !== null &&
-	                    strtotime( $infoProjectUser['user_expiration'] ) < time() ) );
+	                    strtotime( $infoProjectUser['user_expiration'] ) < time() ) ||
+	                  ( $infoProjectUser['expiration'] !== null &&
+	                    strtotime( $infoProjectUser['expiration'] ) < time() ) );
 	if ( $infoProjectUser['group_name'] !== $lastGroupName )
 	{
 		if ( $lastGroupName !== '' )
@@ -97,10 +99,11 @@ foreach ( $listProjectUsers as $infoProjectUser )
 <h4><?php echo $thisGroupName; ?></h4>
 <table class="usertable">
  <tr>
-  <th style="width:20%">Username</th>
-  <th style="width:30%">Name</th>
-  <th style="width:30%">Role</th>
-  <th style="width:20%">Expires</th>
+  <th style="width:15%">Username</th>
+  <th style="width:25%">Name</th>
+  <th style="width:30%">Email</th>
+  <th style="width:20%">Role</th>
+  <th style="width:10%">Expires</th>
  </tr>
 <?php
 	}
@@ -111,6 +114,7 @@ foreach ( $listProjectUsers as $infoProjectUser )
 ?>"><?php echo htmlspecialchars( $infoProjectUser['username'] ); ?></a></td>
   <td><?php echo htmlspecialchars( $infoProjectUser['user_firstname'] . ' ' .
                                    $infoProjectUser['user_lastname'] ); ?></td>
+  <td><?php echo htmlspecialchars( $infoProjectUser['user_email'] ); ?></td>
   <td><?php echo htmlspecialchars( $infoProjectUser['role_name'] ); ?></td>
   <td><?php echo $infoProjectUser['expiration'] == '' ? ''
                   : date( 'd M Y', strtotime( $infoProjectUser['expiration'] ) ); ?></td>
@@ -122,7 +126,8 @@ foreach ( $listProjectUsers as $infoProjectUser )
 </table>
 <script type="text/javascript">
 $('head').append('<style type="text/css">.usertable {width:100%} .usertable th, ' +
-                 '.usertable td {border:solid 1px #000;padding:3px}</style>')
+                 '.usertable td {border:solid 1px #000;padding:3px} ' +
+                 '#pagecontainer {max-width:1000px}</style>')
 </script>
 <?php
 
