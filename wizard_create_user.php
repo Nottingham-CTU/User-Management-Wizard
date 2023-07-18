@@ -115,20 +115,20 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
           <td>First name:&nbsp; </td>
           <td><input type="text" name="firstname" size="50" required<?php
 echo isset($_GET['firstname'])
-     ? ( ' value="' . htmlspecialchars( ucfirst( $_GET['firstname'] ) ) . '"' ) : '';
+     ? ( ' value="' . $module->escapeHTML( ucfirst( $_GET['firstname'] ) ) . '"' ) : '';
 ?>></td>
         </tr>
         <tr>
           <td>Last name:&nbsp; </td>
           <td><input type="text" name="lastname" size="50" required<?php
 echo isset($_GET['lastname'])
-     ? ( ' value="' . htmlspecialchars( ucfirst( $_GET['lastname'] ) ) . '"' ) : '';
+     ? ( ' value="' . $module->escapeHTML( ucfirst( $_GET['lastname'] ) ) . '"' ) : '';
 ?>></td>
         </tr>
         <tr>
           <td>Username:&nbsp; </td>
           <td><input type="text" name="username" size="50" required<?php
-echo isset($_GET['username']) ? ( ' value="' . htmlspecialchars( $_GET['username'] ) . '"' ) : '';
+echo isset($_GET['username']) ? ( ' value="' . $module->escapeHTML( $_GET['username'] ) . '"' ) : '';
 echo $userType == 'i' ? ' readonly' : ''; // username pre-entered if internal user
 ?>></td>
         </tr>
@@ -136,7 +136,7 @@ echo $userType == 'i' ? ' readonly' : ''; // username pre-entered if internal us
           <td>Email address:&nbsp; </td>
           <td><input type="text" name="email" size="50" required
                pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`|{}~-]+)+@([A-Za-z0-9-]+(\.(?=.))?)+$"<?php
-echo isset($_GET['email']) ? ( ' value="' . htmlspecialchars( $_GET['email'] ) . '"' ) : '';
+echo isset($_GET['email']) ? ( ' value="' . $module->escapeHTML( $_GET['email'] ) . '"' ) : '';
 ?>></td>
         </tr>
 <?php

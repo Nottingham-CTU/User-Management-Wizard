@@ -137,7 +137,7 @@ if ( ! empty( $_POST ) )
 				if ( isset( $_POST['dag'][$dagID] ) )
 				{
 					$listDAGs[] = $dagID;
-					$listDAGNames[] = htmlspecialchars( $currentProjectDAG['group_name'] );
+					$listDAGNames[] = $module->escapeHTML( $currentProjectDAG['group_name'] );
 				}
 			}
 		}
@@ -196,12 +196,12 @@ if ( ! empty( $_POST ) )
 			               $infoUser['user_firstname'] . ' ' . $infoUser['user_lastname'] .
 			               ') added to ' . $assignedProject['app_title'],
 			               '<html><body>The following user has been added to ' .
-			               htmlspecialchars( $assignedProject['app_title'] ) . ':<br><br>' .
+			               $module->escapeHTML( $assignedProject['app_title'] ) . ':<br><br>' .
 			               '<b>Username:</b> ' . $infoUser['username'] . '<br><b>Name:</b> ' .
-			               htmlspecialchars( $infoUser['user_firstname'] . ' ' .
+			               $module->escapeHTML( $infoUser['user_firstname'] . ' ' .
 			                                 $infoUser['user_lastname'] ) .
 			               '<br><b>Email:</b> ' . $infoUser['user_email'] . '<br><br>' .
-			               '<b>Role:</b> ' . htmlspecialchars( $assignedRole['role_name'] ) .
+			               '<b>Role:</b> ' . $module->escapeHTML( $assignedRole['role_name'] ) .
 			               '<br><br><b>Data Access Group(s):</b><br>' .
 			               ( count( $listDAGs ) == 0 ?
 			                 '<i>All</i>' : implode( '<br>', $listDAGNames ) ) .
@@ -439,7 +439,7 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
 
 ?>
 <div style="height:70px"></div>
-<h3>User Project Assignment &#8212; <?php echo htmlspecialchars( $_GET['username'] ); ?></h3>
+<h3>User Project Assignment &#8212; <?php echo $module->escapeHTML( $_GET['username'] ); ?></h3>
 <?php
 
 if ( $userNeedsAllowlist )
@@ -473,19 +473,19 @@ if ( $infoUser['user_suspended_time'] != '' ||
 <table style="width:100%">
  <tr>
   <th>First&nbsp;name:&nbsp;</th>
-  <td style="width:100%"><?php echo htmlspecialchars( $infoUser['user_firstname'] ); ?></td>
+  <td style="width:100%"><?php echo $module->escapeHTML( $infoUser['user_firstname'] ); ?></td>
  </tr>
  <tr>
   <th>Last&nbsp;name:&nbsp;</th>
-  <td><?php echo htmlspecialchars( $infoUser['user_lastname'] ); ?></td>
+  <td><?php echo $module->escapeHTML( $infoUser['user_lastname'] ); ?></td>
  </tr>
  <tr>
   <th style="vertical-align:top">Email&nbsp;address:&nbsp;</th>
-  <td><?php echo htmlspecialchars( $infoUser['user_email'] ),
+  <td><?php echo $module->escapeHTML( $infoUser['user_email'] ),
                  ( $infoUser['user_email2'] == '' ? '' :
-                   ( '<br>' . htmlspecialchars( $infoUser['user_email2'] ) ) ),
+                   ( '<br>' . $module->escapeHTML( $infoUser['user_email2'] ) ) ),
                  ( $infoUser['user_email3'] == '' ? '' :
-                   ( '<br>' . htmlspecialchars( $infoUser['user_email3'] ) ) ); ?></td>
+                   ( '<br>' . $module->escapeHTML( $infoUser['user_email3'] ) ) ); ?></td>
  </tr>
  <tr>
   <th style="vertical-align:top">Comments:&nbsp;</th>
@@ -493,7 +493,7 @@ if ( $infoUser['user_suspended_time'] != '' ||
    <form method="post">
     <textarea name="comments" onchange="$('#btnUpdateComments').css('display','')"
               onkeydown="$('#btnUpdateComments').css('display','')"
-         style="width:100%;height:75px"><?php echo htmlspecialchars( $userComments ); ?></textarea>
+         style="width:100%;height:75px"><?php echo $module->escapeHTML( $userComments ); ?></textarea>
     <input type="submit" value="Update" id="btnUpdateComments" style="display:none">
     <input type="hidden" name="action" value="update_comments">
    </form>
@@ -530,13 +530,13 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
 <div class="mod-umw-projfrm">
  <div>
-  <h5 style="margin-top:15px"><?php echo htmlspecialchars( $infoProject['app_title'] ); ?></h5>
+  <h5 style="margin-top:15px"><?php echo $module->escapeHTML( $infoProject['app_title'] ); ?></h5>
 <?php
 	if ( SUPER_USER == 1 )
 	{
 ?>
   <p><a href="<?php echo APP_PATH_WEBROOT, 'index.php?pid=',
-                         $infoProject['project_id']; ?>">Go to project</a></p>
+                         intval( $infoProject['project_id'] ); ?>">Go to project</a></p>
 <?php
 	}
 ?>
@@ -551,7 +551,7 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
  <p><b>Role:</b> <?php
 	echo $infoProject['role_name'] === null
-		 ? '<i>Custom role</i>' : htmlspecialchars( $infoProject['role_name'] );
+		 ? '<i>Custom role</i>' : $module->escapeHTML( $infoProject['role_name'] );
 ?></p>
 <?php
 	if ( $infoProject['access_all_dags'] == 1 )
@@ -584,7 +584,7 @@ foreach ( $listAssignedProjects as $infoProject )
 				break;
 			}
 ?>
-  <li><?php echo htmlspecialchars( $infoDAG['group_name'] ); ?></li>
+  <li><?php echo $module->escapeHTML( $infoDAG['group_name'] ); ?></li>
 <?php
 		}
 ?>
@@ -602,7 +602,7 @@ foreach ( $listAssignedProjects as $infoProject )
      <input type="checkbox" name="dag[<?php echo $infoDAG['group_id']; ?>]" value="1"<?php
 			echo $infoDAG['active'] == 1 ? ' checked' : ''; ?>></td>
     <td style="padding-left:5px;color:#<?php echo $infoDAG['active'] == 1 ? '003300' : '660000'; ?>">
-     <?php echo htmlspecialchars( $infoDAG['group_name'] ), "\n"; ?>
+     <?php echo $module->escapeHTML( $infoDAG['group_name'] ), "\n"; ?>
     </td>
    </tr>
 <?php
@@ -613,7 +613,7 @@ foreach ( $listAssignedProjects as $infoProject )
   <p style="margin-bottom:15px">
    <input type="submit" value="Update DAG assignment">
    <input type="hidden" name="action" value="update_dags">
-   <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
  </form>
 <?php
@@ -626,10 +626,10 @@ foreach ( $listAssignedProjects as $infoProject )
   <p>
    <b>Mobile app:</b>
    <input type="submit" value="Grant access" class="btnGrantAPI" data-project="<?php
-		echo htmlspecialchars( $infoProject['app_title'] );
+		echo $module->escapeHTML( $infoProject['app_title'] );
 ?>">
    <input type="hidden" name="action" value="app_api_token">
-   <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
  </form>
 <?php
@@ -659,7 +659,7 @@ foreach ( $listAssignedProjects as $infoProject )
     &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
                                    onclick="$(this).prev().prev().prop('required',false)">
     <input type="hidden" name="action" value="set_expire">
-    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
 <?php
 	}
@@ -675,7 +675,7 @@ foreach ( $listAssignedProjects as $infoProject )
     <input type="submit" value="Change expiration date">
     &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately">
     <input type="hidden" name="action" value="set_expire">
-    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
 <?php
 	}
@@ -705,10 +705,10 @@ foreach ( $listAssignedProjects as $infoProject )
 foreach ( $listUnassignedProjects as $infoProject )
 {
 ?>
-     <option value="<?php echo $infoProject['project_id']; ?>"
-             data-roles="<?php echo htmlspecialchars( json_encode( $infoProject['roles'] ) ); ?>"
-             data-dags="<?php echo htmlspecialchars( json_encode( $infoProject['dags'] ) ); ?>"><?php
-	echo htmlspecialchars( $infoProject['app_title'] ),
+     <option value="<?php echo intval( $infoProject['project_id'] ); ?>"
+             data-roles="<?php echo $module->escapeHTML( json_encode( $infoProject['roles'] ) ); ?>"
+             data-dags="<?php echo $module->escapeHTML( json_encode( $infoProject['dags'] ) ); ?>"><?php
+	echo $module->escapeHTML( $infoProject['app_title'] ),
 	     ( $infoProject['purpose'] == 2 ? '' : ' &nbsp;(non-research project)' ); ?></option>
 <?php
 }

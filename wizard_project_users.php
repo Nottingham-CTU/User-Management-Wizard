@@ -72,7 +72,7 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
 
 ?>
 <div style="height:70px"></div>
-<h3>Project Users &#8212; <?php echo htmlspecialchars( $infoProject['app_title'] ); ?></h3>
+<h3>Project Users &#8212; <?php echo $module->escapeHTML( $infoProject['app_title'] ); ?></h3>
 <?php
 $lastGroupName = '';
 foreach ( $listProjectUsers as $infoProjectUser )
@@ -93,7 +93,7 @@ foreach ( $listProjectUsers as $infoProjectUser )
 		}
 		$thisGroupName = ( $infoProjectUser['group_name'] === null
 		                   ? 'No Group (access all data)'
-		                   : htmlspecialchars( $infoProjectUser['group_name'] ) );
+		                   : $module->escapeHTML( $infoProjectUser['group_name'] ) );
 ?>
 <p>&nbsp;</p>
 <h4><?php echo $thisGroupName; ?></h4>
@@ -111,11 +111,11 @@ foreach ( $listProjectUsers as $infoProjectUser )
  <tr<?php echo $inactiveUser ? ' style="text-decoration:line-through"' : ''; ?>>
   <td><a href="<?php echo $module->getUrl( 'wizard_user_projects.php?username=' .
                                            rawurlencode( $infoProjectUser['username'] ) );
-?>"><?php echo htmlspecialchars( $infoProjectUser['username'] ); ?></a></td>
-  <td><?php echo htmlspecialchars( $infoProjectUser['user_firstname'] . ' ' .
+?>"><?php echo $module->escapeHTML( $infoProjectUser['username'] ); ?></a></td>
+  <td><?php echo $module->escapeHTML( $infoProjectUser['user_firstname'] . ' ' .
                                    $infoProjectUser['user_lastname'] ); ?></td>
-  <td><?php echo htmlspecialchars( $infoProjectUser['user_email'] ); ?></td>
-  <td><?php echo htmlspecialchars( $infoProjectUser['role_name'] ); ?></td>
+  <td><?php echo $module->escapeHTML( $infoProjectUser['user_email'] ); ?></td>
+  <td><?php echo $module->escapeHTML( $infoProjectUser['role_name'] ); ?></td>
   <td><?php echo $infoProjectUser['expiration'] == '' ? ''
                   : date( 'd M Y', strtotime( $infoProjectUser['expiration'] ) ); ?></td>
  </tr>

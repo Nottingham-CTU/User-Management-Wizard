@@ -151,6 +151,7 @@ $(function()
 	// Add a user to a project, with the specified role and DAGs.
 	public function addUserToProject( $username, $projectID, $roleID, $listDAGs )
 	{
+		$projectID = intval( $projectID );
 		// Determine whether the user should be notified about their new project (send the
 		// notification only if the user has previously logged in to REDCap).
 		$userNotify =
@@ -216,6 +217,7 @@ $(function()
 	// Change the DAGs the user is assigned to for a specified project.
 	public function changeUserDAGs( $username, $projectID, $addDAGs, $removeDAGs )
 	{
+		$projectID = intval( $projectID );
 		// Start administrative session.
 		$sessionID = $this->startUserSession();
 		// Add/remove the user from the specified DAGs.
@@ -278,6 +280,7 @@ $(function()
 	// by this function as the user is not expected to use it directly.
 	public function createAPITokenForUser( $username, $projectID )
 	{
+		$projectID = intval( $projectID );
 		// Start administrative session.
 		$sessionID = $this->startUserSession();
 		// Create API token.
@@ -296,6 +299,14 @@ $(function()
 		\REDCap::logEvent( 'User Management Wizard',
 		                   "API token created for user '$username' by '" . USERID . "'", null, null,
 		                   null, $projectID );
+	}
+
+
+
+	// Escapes text for inclusion in HTML.
+	function escapeHTML( $text )
+	{
+		return htmlspecialchars( $text, ENT_QUOTES );
 	}
 
 
