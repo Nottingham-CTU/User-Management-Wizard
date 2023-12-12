@@ -26,7 +26,9 @@ expression.
 For example, to treat *@example.com* addresses as internal, use `@example\.com$`
 
 ### File path of cURL CA bundle
-Path to a file containing CA certificates to validate HTTPS requests.
+Path to a file containing CA certificates to validate HTTPS requests. If this is not specified, the
+CA bundle file specified in the php.ini configuration file will be used. If a CA bundle file is not
+specified in php.ini, then the CA bundle included with REDCap will be used.
 
 ### Project role names to allow users to be assigned to
 Define the role names that a user can be assigned to within a project when using the wizard. Only

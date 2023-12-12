@@ -510,6 +510,10 @@ $(function()
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, $curlCertBundle );
 		}
+		elseif ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, self::REDCAP_CAINFO );
+		}
 		curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
 		curl_setopt( $curl, CURLOPT_COOKIESESSION, true );
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
