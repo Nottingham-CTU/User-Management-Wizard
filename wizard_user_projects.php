@@ -593,7 +593,7 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
    <tr class="mod-umw-trhover"<?php echo $DAGSep ? ' style="border-top:solid 1px #000"' : ''; ?>>
     <td style="width:32px">
-     <input type="checkbox" name="dag[<?php echo $infoDAG['group_id']; ?>]" value="1"<?php
+     <input type="checkbox" name="dag[<?php echo intval($infoDAG['group_id']); ?>]" value="1"<?php
 			echo $infoDAG['active'] == 1 ? ' checked' : ''; ?>></td>
     <td style="padding-left:5px;color:#<?php echo $infoDAG['active'] == 1 ? '003300' : '660000'; ?>">
      <?php echo $module->escapeHTML( $infoDAG['group_name'] ), "\n"; ?>
