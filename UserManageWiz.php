@@ -6,6 +6,7 @@ namespace Nottingham\UserManageWiz;
 class UserManageWiz extends \ExternalModules\AbstractExternalModule
 {
 
+	const REDCAP_CAINFO = APP_PATH_DOCROOT . '/Resources/misc/cacert.pem';
 	const ROOT_PATH = APP_PATH_WEBROOT_FULL;
 	const VERSION_PATH = self::ROOT_PATH . 'redcap_v' . REDCAP_VERSION . '/';
 
