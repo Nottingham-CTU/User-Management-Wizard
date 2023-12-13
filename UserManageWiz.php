@@ -311,6 +311,52 @@ $(function()
 
 
 
+	// Get a list of the accessible projects for the wizard user.
+	public function getAccessibleProjects( $username )
+	{
+		// Get excluded projects.
+		$excludedProjects = [];
+		$projectSettings = [ 'project-id' => $this->getSystemSetting( 'project-id' ),
+		                     'project-exclude' => $this->getSystemSetting( 'project-exclude' ) ];
+		for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
+		{
+			if ( $projectSettings['project-exclude'][$i] &&
+			     preg_match( '/^[0-9]+$/', $projectSettings['project-id'][$i] ) )
+			{
+				$excludedProjects[] = $projectSettings['project-id'][$i];
+			}
+		}
+		$excludedProjects = empty( $excludedProjects ) ? '' :
+		                    ( 'AND project_id NOT IN (' . implode( ',', $excludedProjects ) . ')' );
+		// Determine whether the user is an administrator.
+		$isAdmin = $this->query( 'SELECT 1 FROM redcap_user_information WHERE super_user = 1 ' .
+		                           'AND username = ?', [ $username ] )->fetch_assoc() != false;
+		// Determine whether operational support / quality improvement projects can be accessed.
+		$canOpSup = $this->getSystemSetting( 'access-op-sup' );
+		$canQualImp = $this->getSystemSetting( 'access-qual-imp' );
+		$purposeSQL = 'purpose = 2' . ( $canOpSup ? ' OR purpose = 4' : '' ) .
+		                              ( $canQualImp ? ' OR purpose = 3' : '' );
+		// Get project IDs and titles for accessible projects.
+		$listProjects = [];
+		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects ' .
+		                              'WHERE completed_time IS NULL AND project_id ' .
+		                              'NOT IN (SELECT project_id FROM redcap_projects_templates) ' .
+		                              ( $isAdmin ? '' : ( 'AND (' . $purposeSQL . ') AND ' .
+		                                'project_id IN ( SELECT project_id ' .
+		                                'FROM redcap_user_rights WHERE username = ? AND ' .'
+		                                ( expiration IS NULL OR expiration > NOW() ) ) ' ) ) .
+		                              $excludedProjects . ' ORDER BY ' .
+		                              'if( purpose > 1, purpose, 6 - purpose ), app_title',
+		                              ( $isAdmin ? [] : [ $username ] ) );
+		while ( $infoProject = $queryProject->fetch_assoc() )
+		{
+			$listProjects[ $infoProject['project_id'] ] = $infoProject['app_title'];
+		}
+		return $listProjects;
+	}
+
+
+
 	// Get any comments associated with this user.
 	// This excludes the first line of the comments field in the database, as this is used to record
 	// the research projects the user is added to, for easy identification when viewed within the

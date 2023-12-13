@@ -10,36 +10,16 @@ if ( ! $module->isAccessAllowed() )
 }
 
 
-// Prohibit access to this page if the chosen project is excluded.
-$projectSettings = [ 'project-id' => $module->getSystemSetting( 'project-id' ),
-                     'project-exclude' => $module->getSystemSetting( 'project-exclude' ) ];
-for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
-{
-	if ( $projectSettings['project-exclude'][$i] &&
-	     $projectSettings['project-id'][$i] == $_GET['proj'] )
-	{
-		echo 'You do not have the rights to access this page.';
-		exit;
-	}
-}
-
 // Prohibit access to this page if the user does not have access to the project.
-$queryProject = $module->query( 'SELECT project_id, app_title FROM redcap_projects ' .
-	                            'WHERE project_id = ? AND completed_time IS NULL AND project_id ' .
-	                            'NOT IN (SELECT project_id FROM redcap_projects_templates)' .
-	                            ( SUPER_USER == 1 ? '' : ( ' AND purpose = 2 AND ' .
-	                              'project_id IN ( SELECT project_id ' .
-	                              'FROM redcap_user_rights WHERE username = ? AND ' .'
-	                              ( expiration IS NULL OR expiration > NOW() ) )' ) ),
-	                            ( SUPER_USER == 1 ? [ $_GET['proj'] ]
-	                                              : [ $_GET['proj'], USERID ] ) );
-$infoProject = $queryProject->fetch_assoc();
+$listProjects = $module->getAccessibleProjects( USERID );
 
-if ( $infoProject == null )
+if ( ! isset( $listProjects[ $_GET['proj'] ] ) )
 {
 	echo 'You do not have the rights to access this page.';
 	exit;
 }
+
+$projectAppTitle = $listProjects[ $_GET['proj'] ];
 
 $queryProjectUsers =
 	$module->query( 'WITH users AS ( SELECT username, expiration, role_id, group_id ' .
@@ -72,7 +52,7 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
 
 ?>
 <div style="height:70px"></div>
-<h3>Project Users &#8212; <?php echo $module->escapeHTML( $infoProject['app_title'] ); ?></h3>
+<h3>Project Users &#8212; <?php echo $module->escapeHTML( $projectAppTitle ); ?></h3>
 <?php
 $lastGroupName = '';
 foreach ( $listProjectUsers as $infoProjectUser )

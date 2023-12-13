@@ -32,6 +32,16 @@
 			"type" : "textarea"
 		},
 		{
+			"key" : "access-op-sup",
+			"name" : "Standard users can access Operational Support projects",
+			"type" : "checkbox"
+		},
+		{
+			"key" : "access-qual-imp",
+			"name" : "Standard users can access Quality Improvement projects",
+			"type" : "checkbox"
+		},
+		{
 			"key" : "header2",
 			"name" : "<b>Wizard Configuration</b>",
 			"type" : "descriptive"
