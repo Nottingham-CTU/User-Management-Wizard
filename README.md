@@ -8,6 +8,10 @@ project/DAG assignments.
 These are the usernames of the REDCap users with access to the wizard. Only users in this list will
 see the link to the user management wizard. Users not in the list will not have access.
 
+### Standard users can access Operational Support / Quality Improvement projects
+Select these options to allow standard users (non-administrators) to manage Operational Support
+and/or Quality Improvement projects in addition to Research projects.
+
 ### Administrator username
 Some functions of the wizard are performed through REDCap as an administrator. Specify the
 administrator username to be used for this here.
