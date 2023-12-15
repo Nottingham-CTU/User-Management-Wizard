@@ -15,6 +15,16 @@
 			"institution": "University of Nottingham"
 		}
 	],
+	"links" : {
+		"control-center" : [
+			{
+				"name" : "User Management Wizard User List",
+				"icon" : "fas fa-user",
+				"url" : "userlist.php",
+				"show-header-and-footer" : true
+			}
+		]
+	},
 	"system-settings" : [
 		{
 			"key" : "s",
