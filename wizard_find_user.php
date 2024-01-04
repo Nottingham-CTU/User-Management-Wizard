@@ -68,9 +68,9 @@ if ( ! empty( $_POST ) )
 		{
 			header( 'Location: ' .
 			        $module->getUrl( 'wizard_create_user.php?usertype=e' .
-			                         '&firstname=' . rawurlencode( $_POST['firstname'] ) .
-			                         '&lastname=' . rawurlencode( $_POST['lastname'] ) .
-			                         '&email=' . rawurlencode( $_POST['email'] ) ) );
+			                         '&firstname=' . rawurlencode( trim( $_POST['firstname'] ) ) .
+			                         '&lastname=' . rawurlencode( trim( $_POST['lastname'] ) ) .
+			                         '&email=' . rawurlencode( trim( $_POST['email'] ) ) ) );
 			exit;
 		}
 		// Retrieve the records from the user search.
@@ -134,9 +134,9 @@ if ( $showSearch )
 <p>
  <b>Can't find the user you're looking for?</b>
  <a href="<?php echo $module->getUrl( 'wizard_create_user.php?usertype=e' .
-                                      '&firstname=' . rawurlencode( $_POST['firstname'] ) .
-                                      '&lastname=' . rawurlencode( $_POST['lastname'] ) .
-                                      '&email=' . rawurlencode( $_POST['email'] ) );
+                                      '&firstname=' . rawurlencode( trim( $_POST['firstname'] ) ) .
+                                      '&lastname=' . rawurlencode( trim( $_POST['lastname'] ) ) .
+                                      '&email=' . rawurlencode( trim( $_POST['email'] ) ) );
 ?>">Create a new user account</a>
 </p>
 <p>&nbsp;</p>

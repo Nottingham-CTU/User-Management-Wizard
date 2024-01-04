@@ -42,6 +42,12 @@ if ( ! empty( $_POST ) )
 		exit;
 	}
 
+	// Trim leading/trailing whitespace.
+	$_POST['firstname'] = trim( $_POST['firstname'] );
+	$_POST['lastname'] = trim( $_POST['lastname'] );
+	$_POST['username'] = trim( $_POST['username'] );
+	$_POST['email'] = trim( $_POST['email'] );
+
 	if ( $_POST['firstname'] == '' || $_POST['lastname'] == '' || $_POST['username'] == '' ||
 	     $_POST['email'] == '' ||
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
@@ -225,7 +231,12 @@ if ( $userType == 'e' ) // external user
     var vLastname = $('[name="lastname"]').val()
     if ( vFirstname != '' && vLastname != '' && vUsernameField.val() == '' )
     {
-      $('[name="username"]').val( (vFirstname.substring(0,1)+vLastname).toLowerCase() )
+      var vUsername = (vFirstname.substring(0,1)+vLastname).toLowerCase().replace(/[^a-z]/g,'')
+      if ( vUsername.length > 18 )
+      {
+        vUsername = vUsername.substring(0,16)
+      }
+      vUsernameField.val( vUsername )
       vUsernameField.blur()
     }
   })

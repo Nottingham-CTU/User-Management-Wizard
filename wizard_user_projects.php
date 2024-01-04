@@ -10,8 +10,9 @@ if ( ! $module->isAccessAllowed() )
 
 // Check that the user exists.
 if ( ! isset( $_GET['username'] ) ||
-     $module->query( 'SELECT 1 FROM redcap_user_information WHERE username = ?',
-                     [ $_GET['username'] ] )->num_rows == 0 )
+     $module->query( 'SELECT 1 FROM redcap_user_information WHERE username = ? ' .
+                     'AND LENGTH(username) = LENGTH(?)',
+                     [ $_GET['username'], $_GET['username'] ] )->num_rows == 0 )
 {
 	echo 'The requested user account does not exist.';
 	exit;
