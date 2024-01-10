@@ -6,6 +6,7 @@ namespace Nottingham\UserManageWiz;
 class UserManageWiz extends \ExternalModules\AbstractExternalModule
 {
 
+	const REDCAP_CAINFO = APP_PATH_DOCROOT . '/Resources/misc/cacert.pem';
 	const ROOT_PATH = APP_PATH_WEBROOT_FULL;
 	const VERSION_PATH = self::ROOT_PATH . 'redcap_v' . REDCAP_VERSION . '/';
 
@@ -151,6 +152,7 @@ $(function()
 	// Add a user to a project, with the specified role and DAGs.
 	public function addUserToProject( $username, $projectID, $roleID, $listDAGs )
 	{
+		$projectID = intval( $projectID );
 		// Determine whether the user should be notified about their new project (send the
 		// notification only if the user has previously logged in to REDCap).
 		$userNotify =
@@ -216,6 +218,7 @@ $(function()
 	// Change the DAGs the user is assigned to for a specified project.
 	public function changeUserDAGs( $username, $projectID, $addDAGs, $removeDAGs )
 	{
+		$projectID = intval( $projectID );
 		// Start administrative session.
 		$sessionID = $this->startUserSession();
 		// Add/remove the user from the specified DAGs.
@@ -278,6 +281,7 @@ $(function()
 	// by this function as the user is not expected to use it directly.
 	public function createAPITokenForUser( $username, $projectID )
 	{
+		$projectID = intval( $projectID );
 		// Start administrative session.
 		$sessionID = $this->startUserSession();
 		// Create API token.
@@ -296,6 +300,60 @@ $(function()
 		\REDCap::logEvent( 'User Management Wizard',
 		                   "API token created for user '$username' by '" . USERID . "'", null, null,
 		                   null, $projectID );
+	}
+
+
+
+	// Escapes text for inclusion in HTML.
+	function escapeHTML( $text )
+	{
+		return htmlspecialchars( $text, ENT_QUOTES );
+	}
+
+
+
+	// Get a list of the accessible projects for the wizard user.
+	public function getAccessibleProjects( $username )
+	{
+		// Get excluded projects.
+		$excludedProjects = [];
+		$projectSettings = [ 'project-id' => $this->getSystemSetting( 'project-id' ),
+		                     'project-exclude' => $this->getSystemSetting( 'project-exclude' ) ];
+		for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
+		{
+			if ( $projectSettings['project-exclude'][$i] &&
+			     preg_match( '/^[0-9]+$/', $projectSettings['project-id'][$i] ) )
+			{
+				$excludedProjects[] = $projectSettings['project-id'][$i];
+			}
+		}
+		$excludedProjects = empty( $excludedProjects ) ? '' :
+		                    ( 'AND project_id NOT IN (' . implode( ',', $excludedProjects ) . ')' );
+		// Determine whether the user is an administrator.
+		$isAdmin = $this->query( 'SELECT 1 FROM redcap_user_information WHERE super_user = 1 ' .
+		                           'AND username = ?', [ $username ] )->fetch_assoc() != false;
+		// Determine whether operational support / quality improvement projects can be accessed.
+		$canOpSup = $this->getSystemSetting( 'access-op-sup' );
+		$canQualImp = $this->getSystemSetting( 'access-qual-imp' );
+		$purposeSQL = 'purpose = 2' . ( $canOpSup ? ' OR purpose = 4' : '' ) .
+		                              ( $canQualImp ? ' OR purpose = 3' : '' );
+		// Get project IDs and titles for accessible projects.
+		$listProjects = [];
+		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects ' .
+		                              'WHERE completed_time IS NULL AND project_id ' .
+		                              'NOT IN (SELECT project_id FROM redcap_projects_templates) ' .
+		                              ( $isAdmin ? '' : ( 'AND (' . $purposeSQL . ') AND ' .
+		                                'project_id IN ( SELECT project_id ' .
+		                                'FROM redcap_user_rights WHERE username = ? AND ' .'
+		                                ( expiration IS NULL OR expiration > NOW() ) ) ' ) ) .
+		                              $excludedProjects . ' ORDER BY ' .
+		                              'if( purpose > 1, purpose, 6 - purpose ), app_title',
+		                              ( $isAdmin ? [] : [ $username ] ) );
+		while ( $infoProject = $queryProject->fetch_assoc() )
+		{
+			$listProjects[ $infoProject['project_id'] ] = $infoProject['app_title'];
+		}
+		return $listProjects;
 	}
 
 
@@ -498,6 +556,10 @@ $(function()
 		if ( $curlCertBundle != '' )
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, $curlCertBundle );
+		}
+		elseif ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, self::REDCAP_CAINFO );
 		}
 		curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
 		curl_setopt( $curl, CURLOPT_COOKIESESSION, true );

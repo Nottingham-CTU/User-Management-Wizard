@@ -42,6 +42,12 @@ if ( ! empty( $_POST ) )
 		exit;
 	}
 
+	// Trim leading/trailing whitespace.
+	$_POST['firstname'] = trim( $_POST['firstname'] );
+	$_POST['lastname'] = trim( $_POST['lastname'] );
+	$_POST['username'] = trim( $_POST['username'] );
+	$_POST['email'] = trim( $_POST['email'] );
+
 	if ( $_POST['firstname'] == '' || $_POST['lastname'] == '' || $_POST['username'] == '' ||
 	     $_POST['email'] == '' ||
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
@@ -115,20 +121,20 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
           <td>First name:&nbsp; </td>
           <td><input type="text" name="firstname" size="50" required<?php
 echo isset($_GET['firstname'])
-     ? ( ' value="' . htmlspecialchars( ucfirst( $_GET['firstname'] ) ) . '"' ) : '';
+     ? ( ' value="' . $module->escapeHTML( ucfirst( $_GET['firstname'] ) ) . '"' ) : '';
 ?>></td>
         </tr>
         <tr>
           <td>Last name:&nbsp; </td>
           <td><input type="text" name="lastname" size="50" required<?php
 echo isset($_GET['lastname'])
-     ? ( ' value="' . htmlspecialchars( ucfirst( $_GET['lastname'] ) ) . '"' ) : '';
+     ? ( ' value="' . $module->escapeHTML( ucfirst( $_GET['lastname'] ) ) . '"' ) : '';
 ?>></td>
         </tr>
         <tr>
           <td>Username:&nbsp; </td>
           <td><input type="text" name="username" size="50" required<?php
-echo isset($_GET['username']) ? ( ' value="' . htmlspecialchars( $_GET['username'] ) . '"' ) : '';
+echo isset($_GET['username']) ? ( ' value="' . $module->escapeHTML( $_GET['username'] ) . '"' ) : '';
 echo $userType == 'i' ? ' readonly' : ''; // username pre-entered if internal user
 ?>></td>
         </tr>
@@ -136,7 +142,7 @@ echo $userType == 'i' ? ' readonly' : ''; // username pre-entered if internal us
           <td>Email address:&nbsp; </td>
           <td><input type="text" name="email" size="50" required
                pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`|{}~-]+)+@([A-Za-z0-9-]+(\.(?=.))?)+$"<?php
-echo isset($_GET['email']) ? ( ' value="' . htmlspecialchars( $_GET['email'] ) . '"' ) : '';
+echo isset($_GET['email']) ? ( ' value="' . $module->escapeHTML( $_GET['email'] ) . '"' ) : '';
 ?>></td>
         </tr>
 <?php
@@ -225,7 +231,12 @@ if ( $userType == 'e' ) // external user
     var vLastname = $('[name="lastname"]').val()
     if ( vFirstname != '' && vLastname != '' && vUsernameField.val() == '' )
     {
-      $('[name="username"]').val( (vFirstname.substring(0,1)+vLastname).toLowerCase() )
+      var vUsername = (vFirstname.substring(0,1)+vLastname).toLowerCase().replace(/[^a-z]/g,'')
+      if ( vUsername.length > 18 )
+      {
+        vUsername = vUsername.substring(0,16)
+      }
+      vUsernameField.val( vUsername )
       vUsernameField.blur()
     }
   })

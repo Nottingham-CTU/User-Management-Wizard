@@ -15,6 +15,16 @@
 			"institution": "University of Nottingham"
 		}
 	],
+	"links" : {
+		"control-center" : [
+			{
+				"name" : "User Management Wizard User List",
+				"icon" : "fas fa-user",
+				"url" : "userlist.php",
+				"show-header-and-footer" : true
+			}
+		]
+	},
 	"system-settings" : [
 		{
 			"key" : "s",
@@ -30,6 +40,16 @@
 			"key" : "wizard-users",
 			"name" : "Users allowed to access the wizard<br>(one username per line)",
 			"type" : "textarea"
+		},
+		{
+			"key" : "access-op-sup",
+			"name" : "Standard users can access Operational Support projects",
+			"type" : "checkbox"
+		},
+		{
+			"key" : "access-qual-imp",
+			"name" : "Standard users can access Quality Improvement projects",
+			"type" : "checkbox"
 		},
 		{
 			"key" : "header2",

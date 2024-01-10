@@ -10,12 +10,18 @@ if ( ! $module->isAccessAllowed() )
 
 // Check that the user exists.
 if ( ! isset( $_GET['username'] ) ||
-     $module->query( 'SELECT 1 FROM redcap_user_information WHERE username = ?',
-                     [ $_GET['username'] ] )->num_rows == 0 )
+     $module->query( 'SELECT 1 FROM redcap_user_information WHERE username = ? ' .
+                     'AND LENGTH(username) = LENGTH(?)',
+                     [ $_GET['username'], $_GET['username'] ] )->num_rows == 0 )
 {
 	echo 'The requested user account does not exist.';
 	exit;
 }
+
+
+// Get the list of accessible projects.
+$listAccessibleProjects = $module->getAccessibleProjects( USERID );
+
 
 // Get the user information.
 $infoUser = $module->query( 'SELECT * FROM redcap_user_information WHERE username = ?',
@@ -26,17 +32,11 @@ $defaultAllowedRoles = explode( "\n", str_replace( [ "\r", "\n\n" ], "\n",
                                            $module->getSystemSetting( 'default-allowed-roles' ) ) );
 $projectNotifyEmail = null;
 $projectSettings = [ 'project-id' => $module->getSystemSetting( 'project-id' ),
-                     'project-exclude' => $module->getSystemSetting( 'project-exclude' ),
                      'project-allowed-roles' => $module->getSystemSetting( 'project-allowed-roles' ),
                      'project-email' => $module->getSystemSetting( 'project-email' ) ];
-$excludedProjects = [];
 $listProjectAllowedRoles = [];
 for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
 {
-	if ( $projectSettings['project-exclude'][$i] && $projectSettings['project-id'][$i] != '' )
-	{
-		$excludedProjects[] = $projectSettings['project-id'][$i];
-	}
 	if ( $projectSettings['project-allowed-roles'][$i] != '' &&
 	     $projectSettings['project-id'][$i] != '' )
 	{
@@ -49,23 +49,6 @@ for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
 	     $projectSettings['project-email'][$i] != '' )
 	{
 		$projectNotifyEmail = $projectSettings['project-email'][$i];
-	}
-}
-// If the wizard user is not an administrator, automatically exclude research projects which the
-// wizard user does not have access to.
-if ( SUPER_USER != 1 )
-{
-	$queryUserExclude = $module->query( 'SELECT project_id FROM redcap_projects ' .
-	                                    'WHERE purpose = 2 AND project_id NOT IN ' .
-	                                    '( SELECT project_id FROM redcap_user_rights ' .
-	                                    'WHERE username = ? AND ( expiration IS NULL ' .
-	                                    'OR expiration > NOW() ) )', [ USERID ] );
-	while ( $resUserExclude = $queryUserExclude->fetch_assoc() )
-	{
-		if ( ! in_array( $resUserExclude['project_id'], $excludedProjects ) )
-		{
-			$excludedProjects[] = $resUserExclude['project_id'];
-		}
 	}
 }
 // Determine the projects for which the user can be assigned an API token through the wizard.
@@ -87,6 +70,14 @@ while ( $resAPIToken = $queryAPIToken->fetch_assoc() )
 
 if ( ! empty( $_POST ) )
 {
+	// Check that the project is accessible (if applicable).
+	if ( $_POST['action'] != 'update_comments' &&
+	     ! isset( $listAccessibleProjects[ $_POST['project_id'] ] ) )
+	{
+		echo 'Invalid request: project is not accessible.';
+		exit;
+	}
+	// Perform the requested action.
 	if ( $_POST['action'] == 'add_project' )
 	{
 		// Check the user is not currently assigned to the project.
@@ -137,7 +128,7 @@ if ( ! empty( $_POST ) )
 				if ( isset( $_POST['dag'][$dagID] ) )
 				{
 					$listDAGs[] = $dagID;
-					$listDAGNames[] = htmlspecialchars( $currentProjectDAG['group_name'] );
+					$listDAGNames[] = $module->escapeHTML( $currentProjectDAG['group_name'] );
 				}
 			}
 		}
@@ -196,12 +187,12 @@ if ( ! empty( $_POST ) )
 			               $infoUser['user_firstname'] . ' ' . $infoUser['user_lastname'] .
 			               ') added to ' . $assignedProject['app_title'],
 			               '<html><body>The following user has been added to ' .
-			               htmlspecialchars( $assignedProject['app_title'] ) . ':<br><br>' .
+			               $module->escapeHTML( $assignedProject['app_title'] ) . ':<br><br>' .
 			               '<b>Username:</b> ' . $infoUser['username'] . '<br><b>Name:</b> ' .
-			               htmlspecialchars( $infoUser['user_firstname'] . ' ' .
+			               $module->escapeHTML( $infoUser['user_firstname'] . ' ' .
 			                                 $infoUser['user_lastname'] ) .
 			               '<br><b>Email:</b> ' . $infoUser['user_email'] . '<br><br>' .
-			               '<b>Role:</b> ' . htmlspecialchars( $assignedRole['role_name'] ) .
+			               '<b>Role:</b> ' . $module->escapeHTML( $assignedRole['role_name'] ) .
 			               '<br><br><b>Data Access Group(s):</b><br>' .
 			               ( count( $listDAGs ) == 0 ?
 			                 '<i>All</i>' : implode( '<br>', $listDAGNames ) ) .
@@ -322,105 +313,105 @@ if ( preg_match( "/" . $internalUserRegex . "/", $_GET['username'] ) &&
 }
 
 // Get project information for the user.
-$queryAssignedProjects =
-	$module->query( 'SELECT redcap_projects.project_id, redcap_projects.app_title, ' .
-	                'redcap_projects.purpose, redcap_user_rights.role_id, ' .
-	                'redcap_user_roles.role_name, redcap_user_rights.group_id, ' .
-	                'redcap_user_rights.expiration, ' .
-	                'if( redcap_user_rights.group_id IS NULL OR redcap_user_rights.username IN ' .
-	                ' (SELECT username FROM redcap_data_access_groups_users WHERE project_id = ' .
-	                'redcap_projects.project_id AND group_id IS NULL), 1,0 ) AS access_all_dags, ' .
-	                'if( api_token IS NOT NULL AND ifnull(redcap_user_roles.mobile_app, ' .
-	                'redcap_user_rights.mobile_app) = 1, 1, 0 ) AS mobile_app ' .
-	                'FROM redcap_projects JOIN redcap_user_rights ' .
-	                'ON redcap_projects.project_id = redcap_user_rights.project_id ' .
-	                'LEFT JOIN redcap_user_roles ' .
-	                'ON redcap_user_rights.role_id = redcap_user_roles.role_id ' .
-	                'WHERE redcap_user_rights.username = ? ' .
-	                ( SUPER_USER == 1 ? '' : 'AND redcap_projects.purpose = 2 ' ) .
-	                'AND redcap_projects.completed_time IS NULL ' .
-	                'ORDER BY if(redcap_projects.purpose = 2,0,1), app_title',
-	                [ $_GET['username'] ] );
 $listAssignedProjects = [];
-while ( $infoProject = $queryAssignedProjects->fetch_assoc() )
-{
-	// Check the project is not excluded.
-	if ( in_array( $infoProject['project_id'], $excludedProjects ) )
-	{
-		continue;
-	}
-	// For each assigned project, fetch the record and add the DAG data.
-	$infoProject['dags'] = [];
-	$queryProjectDAG =
-		$module->query( 'SELECT group_id, group_name, if( group_id IN ( SELECT group_id FROM ' .
-		                'redcap_data_access_groups_users WHERE username = ? ), 1, 0 ) AS active ' .
-		                'FROM redcap_data_access_groups WHERE group_id IS NOT NULL ' .
-		                'AND project_id = ? ORDER BY active DESC, group_name',
-		                [ $_GET['username'], $infoProject['project_id'] ] );
-	while ( $infoProjectDAG = $queryProjectDAG->fetch_assoc() )
-	{
-		if ( $infoProject['group_id'] !== null &&
-		     $infoProjectDAG['group_id'] == $infoProject['group_id'] )
-		{
-			$infoProjectDAG['active'] = 1;
-		}
-		$infoProject['dags'][] = $infoProjectDAG;
-	}
-	$listAssignedProjects[] = $infoProject;
-}
-
-// Get details of projects the user is *not* assigned to.
-$queryUnassignedProjects =
-	$module->query( 'SELECT project_id, app_title, purpose FROM redcap_projects ' .
-	                'WHERE project_id NOT IN (SELECT project_id FROM redcap_user_rights ' .
-	                'WHERE username = ?) AND project_id NOT IN (SELECT project_id FROM ' .
-	                'redcap_projects_templates) ' .
-	                ( SUPER_USER == 1 ? '' : 'AND purpose = 2 ' ) .
-	                'ORDER BY if(redcap_projects.purpose = 2, 0, 1), app_title',
-	                [ $_GET['username'] ] );
 $listUnassignedProjects = [];
-while ( $infoProject = $queryUnassignedProjects->fetch_assoc() )
+foreach ( $listAccessibleProjects as $projectID => $projectName )
 {
-	// Check the project is not excluded.
-	if ( in_array( $infoProject['project_id'], $excludedProjects ) )
+	$infoProject =
+		$module->query( 'SELECT redcap_projects.project_id, redcap_projects.app_title, ' .
+		                'redcap_projects.purpose, redcap_user_rights.role_id, ' .
+		                'redcap_user_roles.role_name, redcap_user_rights.group_id, ' .
+		                'redcap_user_rights.expiration, if( redcap_user_rights.group_id IS NULL ' .
+		                'OR redcap_user_rights.username IN (SELECT username FROM ' .
+		                'redcap_data_access_groups_users WHERE project_id = ' .
+		                'redcap_projects.project_id AND group_id IS NULL), 1, 0 ) AS ' .
+		                'access_all_dags, if( api_token IS NOT NULL AND ' .
+		                'ifnull(redcap_user_roles.mobile_app, redcap_user_rights.mobile_app) = 1,' .
+		                ' 1, 0 ) AS mobile_app FROM redcap_projects JOIN redcap_user_rights ' .
+		                'ON redcap_projects.project_id = redcap_user_rights.project_id ' .
+		                'LEFT JOIN redcap_user_roles ON redcap_user_rights.role_id = ' .
+		                'redcap_user_roles.role_id WHERE redcap_projects.project_id = ? AND ' .
+		                'redcap_user_rights.username = ?',
+		                [ $projectID, $_GET['username'] ] )->fetch_assoc();
+	if ( $infoProject )
 	{
-		continue;
-	}
-	// For each unassigned project, fetch the record and add the roles/DAGs data.
-	$projectAllowedRoles =
-		isset( $listProjectAllowedRoles[ $infoProject['project_id'] ] )
-		? $listProjectAllowedRoles[ $infoProject['project_id'] ] : $defaultAllowedRoles;
-	$infoProject['dags'] = [];
-	$infoProject['roles'] = [];
-	$queryProjectDAG =
-		$module->query( 'SELECT group_id, group_name FROM redcap_data_access_groups ' .
-		                'WHERE group_id IS NOT NULL AND project_id = ? ORDER BY group_name',
-		                [ $infoProject['project_id'] ] );
-	while ( $infoProjectDAG = $queryProjectDAG->fetch_assoc() )
-	{
-		$infoProject['dags'][] = $infoProjectDAG;
-	}
-	if ( ! empty( $projectAllowedRoles ) )
-	{
-		$queryProjectRole =
-			$module->query( 'SELECT role_id, role_name ' .
-			                'FROM redcap_user_roles WHERE project_id = ? ' .
-			                ( SUPER_USER == 1 ? '' :
-			                  ( 'AND role_name IN (' .
-			                    substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) .
-			                    ') ' ) ) .
-			                'ORDER BY role_name',
-			                array_merge( [ $infoProject['project_id'] ],
-			                             ( SUPER_USER == 1 ? [] : $projectAllowedRoles ) ) );
-		while ( $infoProjectRole = $queryProjectRole->fetch_assoc() )
+		// For each assigned project, fetch the record and add the DAG data.
+		$infoProject['dags'] = [];
+		$queryProjectDAG =
+			$module->query( 'SELECT group_id, group_name, if( group_id IN ( SELECT group_id FROM ' .
+			                'redcap_data_access_groups_users WHERE username = ? ), 1, 0 ) AS ' .
+			                'active FROM redcap_data_access_groups WHERE group_id IS NOT NULL ' .
+			                'AND project_id = ? ORDER BY active DESC, group_name',
+			                [ $_GET['username'], $infoProject['project_id'] ] );
+		while ( $infoProjectDAG = $queryProjectDAG->fetch_assoc() )
 		{
-			$infoProject['roles'][] = $infoProjectRole;
+			if ( $infoProject['group_id'] !== null &&
+			     $infoProjectDAG['group_id'] == $infoProject['group_id'] )
+			{
+				$infoProjectDAG['active'] = 1;
+				array_unshift( $infoProject['dags'], $infoProjectDAG );
+			}
+			else
+			{
+				$infoProject['dags'][] = $infoProjectDAG;
+			}
 		}
+		// Add the last project access time to the record and add to the list of assigned projects.
+		$infoLastAccess = $module->query( 'SELECT ts FROM redcap_log_view WHERE user = ? AND ' .
+		                                  'project_id = ? ORDER BY ts DESC LIMIT 1',
+		                                  [ $_GET['username'],
+		                                    $infoProject['project_id'] ] )->fetch_assoc();
+		if ( ! $infoLastAccess )
+		{
+			$infoLastAccess = $module->query( 'SELECT ts FROM redcap_log_view_old WHERE user = ? ' .
+			                                  'AND project_id = ? ORDER BY ts DESC LIMIT 1',
+			                                  [ $_GET['username'],
+			                                    $infoProject['project_id'] ] )->fetch_assoc();
+		}
+		$infoProject['last_access'] = $infoLastAccess ? $infoLastAccess['ts'] : null;
+		$listAssignedProjects[] = $infoProject;
 	}
-	// Only allow the user to be added to the project if (allowed) roles exist.
-	if ( ! empty( $infoProject['roles'] ) )
+	else
 	{
-		$listUnassignedProjects[] = $infoProject;
+		// For each unassigned project, fetch the record and add the roles/DAGs data.
+		$infoProject = $module->query( 'SELECT project_id, app_title, purpose ' .
+		                               'FROM redcap_projects WHERE project_id = ?',
+		                               [ $projectID ] )->fetch_assoc();
+		$projectAllowedRoles =
+			isset( $listProjectAllowedRoles[ $infoProject['project_id'] ] )
+			? $listProjectAllowedRoles[ $infoProject['project_id'] ] : $defaultAllowedRoles;
+		$infoProject['dags'] = [];
+		$infoProject['roles'] = [];
+		$queryProjectDAG =
+			$module->query( 'SELECT group_id, group_name FROM redcap_data_access_groups ' .
+			                'WHERE group_id IS NOT NULL AND project_id = ? ORDER BY group_name',
+			                [ $infoProject['project_id'] ] );
+		while ( $infoProjectDAG = $queryProjectDAG->fetch_assoc() )
+		{
+			$infoProject['dags'][] = $infoProjectDAG;
+		}
+		if ( ! empty( $projectAllowedRoles ) )
+		{
+			$queryProjectRole =
+				$module->query( 'SELECT role_id, role_name ' .
+				                'FROM redcap_user_roles WHERE project_id = ? ' .
+				                ( SUPER_USER == 1 ? '' :
+				                  ( 'AND role_name IN (' .
+				                    substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) .
+				                    ') ' ) ) .
+				                'ORDER BY role_name',
+				                array_merge( [ $infoProject['project_id'] ],
+				                             ( SUPER_USER == 1 ? [] : $projectAllowedRoles ) ) );
+			while ( $infoProjectRole = $queryProjectRole->fetch_assoc() )
+			{
+				$infoProject['roles'][] = $infoProjectRole;
+			}
+		}
+		// Only allow the user to be added to the project if (allowed) roles exist.
+		if ( ! empty( $infoProject['roles'] ) )
+		{
+			$listUnassignedProjects[] = $infoProject;
+		}
 	}
 }
 
@@ -435,7 +426,7 @@ require_once APP_PATH_VIEWS . 'HomeTabs.php';
 
 ?>
 <div style="height:70px"></div>
-<h3>User Project Assignment &#8212; <?php echo htmlspecialchars( $_GET['username'] ); ?></h3>
+<h3>User Project Assignment &#8212; <?php echo $module->escapeHTML( $_GET['username'] ); ?></h3>
 <?php
 
 if ( $userNeedsAllowlist )
@@ -443,8 +434,9 @@ if ( $userNeedsAllowlist )
 
 ?>
 <p style="color:#990000;font-weight:bold">
- Warning: This user is not in the user allowlist and may therefore be prevented from accessing
- REDCap. Please <?php echo SUPER_USER == 1 ? '' : 'ask an administrator to'; ?> check the status
+ Warning: The username for this user matches the internal format but is not in the user allowlist.
+ This user may therefore be prevented from accessing REDCap.
+ Please <?php echo SUPER_USER == 1 ? '' : 'ask an administrator to'; ?> check the status
  of this user in the <?php echo $GLOBALS['lang']['global_07']; ?>.
 </p>
 <?php
@@ -469,19 +461,19 @@ if ( $infoUser['user_suspended_time'] != '' ||
 <table style="width:100%">
  <tr>
   <th>First&nbsp;name:&nbsp;</th>
-  <td style="width:100%"><?php echo htmlspecialchars( $infoUser['user_firstname'] ); ?></td>
+  <td style="width:100%"><?php echo $module->escapeHTML( $infoUser['user_firstname'] ); ?></td>
  </tr>
  <tr>
   <th>Last&nbsp;name:&nbsp;</th>
-  <td><?php echo htmlspecialchars( $infoUser['user_lastname'] ); ?></td>
+  <td><?php echo $module->escapeHTML( $infoUser['user_lastname'] ); ?></td>
  </tr>
  <tr>
   <th style="vertical-align:top">Email&nbsp;address:&nbsp;</th>
-  <td><?php echo htmlspecialchars( $infoUser['user_email'] ),
+  <td><?php echo $module->escapeHTML( $infoUser['user_email'] ),
                  ( $infoUser['user_email2'] == '' ? '' :
-                   ( '<br>' . htmlspecialchars( $infoUser['user_email2'] ) ) ),
+                   ( '<br>' . $module->escapeHTML( $infoUser['user_email2'] ) ) ),
                  ( $infoUser['user_email3'] == '' ? '' :
-                   ( '<br>' . htmlspecialchars( $infoUser['user_email3'] ) ) ); ?></td>
+                   ( '<br>' . $module->escapeHTML( $infoUser['user_email3'] ) ) ); ?></td>
  </tr>
  <tr>
   <th style="vertical-align:top">Comments:&nbsp;</th>
@@ -489,11 +481,18 @@ if ( $infoUser['user_suspended_time'] != '' ||
    <form method="post">
     <textarea name="comments" onchange="$('#btnUpdateComments').css('display','')"
               onkeydown="$('#btnUpdateComments').css('display','')"
-         style="width:100%;height:75px"><?php echo htmlspecialchars( $userComments ); ?></textarea>
+         style="width:100%;height:75px"><?php echo $module->escapeHTML( $userComments ); ?></textarea>
     <input type="submit" value="Update" id="btnUpdateComments" style="display:none">
     <input type="hidden" name="action" value="update_comments">
    </form>
   </td>
+ </tr>
+ <tr>
+  <th>Last&nbsp;login:&nbsp;</th>
+  <td><?php
+echo $infoUser['user_lastlogin'] == '' ? 'never' : date( 'd M Y H:i',
+                                                         strtotime( $infoUser['user_lastlogin'] ) );
+?></td>
  </tr>
 </table>
 <?php
@@ -526,13 +525,13 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
 <div class="mod-umw-projfrm">
  <div>
-  <h5 style="margin-top:15px"><?php echo htmlspecialchars( $infoProject['app_title'] ); ?></h5>
+  <h5 style="margin-top:15px"><?php echo $module->escapeHTML( $infoProject['app_title'] ); ?></h5>
 <?php
 	if ( SUPER_USER == 1 )
 	{
 ?>
   <p><a href="<?php echo APP_PATH_WEBROOT, 'index.php?pid=',
-                         $infoProject['project_id']; ?>">Go to project</a></p>
+                         intval( $infoProject['project_id'] ); ?>">Go to project</a></p>
 <?php
 	}
 ?>
@@ -547,7 +546,7 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
  <p><b>Role:</b> <?php
 	echo $infoProject['role_name'] === null
-		 ? '<i>Custom role</i>' : htmlspecialchars( $infoProject['role_name'] );
+		 ? '<i>Custom role</i>' : $module->escapeHTML( $infoProject['role_name'] );
 ?></p>
 <?php
 	if ( $infoProject['access_all_dags'] == 1 )
@@ -564,11 +563,27 @@ foreach ( $listAssignedProjects as $infoProject )
 	else
 	{
 ?>
- <p>
+ <p style="margin-bottom:5px">
   <b>DAGs:</b>
-  <a onclick="$(this).css('display','none');$(this).parent().next().css('display','');return false"
-     href="#">show DAGs</a>
+  &nbsp;
+  <a onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
+              $(this).parent().next().next().css('display','');return false"
+     href="#">Edit DAGs</a>
  </p>
+ <ul>
+<?php
+		foreach ( $infoProject['dags'] as $infoDAG )
+		{
+			if ( $infoDAG['active'] == 0 )
+			{
+				break;
+			}
+?>
+  <li><?php echo $module->escapeHTML( $infoDAG['group_name'] ); ?></li>
+<?php
+		}
+?>
+ </ul>
  <form method="post" style="display:none">
   <table style="min-width:30%">
 <?php
@@ -579,10 +594,10 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
    <tr class="mod-umw-trhover"<?php echo $DAGSep ? ' style="border-top:solid 1px #000"' : ''; ?>>
     <td style="width:32px">
-     <input type="checkbox" name="dag[<?php echo $infoDAG['group_id']; ?>]" value="1"<?php
+     <input type="checkbox" name="dag[<?php echo intval($infoDAG['group_id']); ?>]" value="1"<?php
 			echo $infoDAG['active'] == 1 ? ' checked' : ''; ?>></td>
     <td style="padding-left:5px;color:#<?php echo $infoDAG['active'] == 1 ? '003300' : '660000'; ?>">
-     <?php echo htmlspecialchars( $infoDAG['group_name'] ), "\n"; ?>
+     <?php echo $module->escapeHTML( $infoDAG['group_name'] ), "\n"; ?>
     </td>
    </tr>
 <?php
@@ -590,10 +605,10 @@ foreach ( $listAssignedProjects as $infoProject )
 		}
 ?>
   </table>
-  <p>
+  <p style="margin-bottom:15px">
    <input type="submit" value="Update DAG assignment">
    <input type="hidden" name="action" value="update_dags">
-   <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
  </form>
 <?php
@@ -606,10 +621,10 @@ foreach ( $listAssignedProjects as $infoProject )
   <p>
    <b>Mobile app:</b>
    <input type="submit" value="Grant access" class="btnGrantAPI" data-project="<?php
-		echo htmlspecialchars( $infoProject['app_title'] );
+		echo $module->escapeHTML( $infoProject['app_title'] );
 ?>">
    <input type="hidden" name="action" value="app_api_token">
-   <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+   <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
  </form>
 <?php
@@ -639,7 +654,7 @@ foreach ( $listAssignedProjects as $infoProject )
     &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
                                    onclick="$(this).prev().prev().prop('required',false)">
     <input type="hidden" name="action" value="set_expire">
-    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
 <?php
 	}
@@ -655,7 +670,7 @@ foreach ( $listAssignedProjects as $infoProject )
     <input type="submit" value="Change expiration date">
     &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately">
     <input type="hidden" name="action" value="set_expire">
-    <input type="hidden" name="project_id" value="<?php echo $infoProject['project_id']; ?>">
+    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
 <?php
 	}
@@ -668,6 +683,11 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
   </p>
  </form>
+ <p>
+  <b>Last project access:</b>
+  <?php echo $infoProject['last_access'] == '' ? 'never' :
+          date( 'd M Y H:i', strtotime( $infoProject['last_access'] ) ); ?>.
+ </p>
 </div>
 <p>&nbsp;</p>
 <?php
@@ -685,10 +705,10 @@ foreach ( $listAssignedProjects as $infoProject )
 foreach ( $listUnassignedProjects as $infoProject )
 {
 ?>
-     <option value="<?php echo $infoProject['project_id']; ?>"
-             data-roles="<?php echo htmlspecialchars( json_encode( $infoProject['roles'] ) ); ?>"
-             data-dags="<?php echo htmlspecialchars( json_encode( $infoProject['dags'] ) ); ?>"><?php
-	echo htmlspecialchars( $infoProject['app_title'] ),
+     <option value="<?php echo intval( $infoProject['project_id'] ); ?>"
+             data-roles="<?php echo $module->escapeHTML( json_encode( $infoProject['roles'] ) ); ?>"
+             data-dags="<?php echo $module->escapeHTML( json_encode( $infoProject['dags'] ) ); ?>"><?php
+	echo $module->escapeHTML( $infoProject['app_title'] ),
 	     ( $infoProject['purpose'] == 2 ? '' : ' &nbsp;(non-research project)' ); ?></option>
 <?php
 }
@@ -772,30 +792,33 @@ if ( SUPER_USER == 1 )
     }
     $('#assign_role_id').html(vRoleOptions)
     $('#assign_dags').html(vDAGOptions)
-    vSelectedItem.form().find('input[name^="dag["]').each(function()
+    vSelectedItem.closest('form').find('input[name^="dag["]').each(function()
     {
       this.setCustomValidity('At least one DAG must be selected.')
     })
-    vSelectedItem.form().find('input[name^="dag["]').click(function()
+    vSelectedItem.closest('form').find('input[name^="dag["]').click(function()
     {
-      if ( $(this).form().find('input[name^="dag["]:checked').length == 0 )
+      if ( $(this).closest('form').find('input[name^="dag["]:checked').length == 0 )
       {
-        $(this).form().find('input[name^="dag["]').each(function()
+        $(this).closest('form').find('input[name^="dag["]').each(function()
         {
           this.setCustomValidity('At least one DAG must be selected.')
         })
       }
-      else if ( $(this).form().find('input[name="dag[*]"]:checked').length == 1 &&
-                $(this).form().find('input[name^="dag["]:checked').length > 1 )
+      else if ( $(this).closest('form').find('input[name="dag[*]"]:checked').length == 1 &&
+                $(this).closest('form').find('input[name^="dag["]:checked').length > 1 )
       {
-        $(this).form().find('input[name^="dag["]').each(function()
+        $(this).closest('form').find('input[name^="dag["]').each(function()
         {
           this.setCustomValidity('No assignment cannot be chosen in combination with specific DAGs.')
         })
       }
       else
       {
-        $(this).form().find('input[name^="dag["]').each(function(){ this.setCustomValidity('') })
+        $(this).closest('form').find('input[name^="dag["]').each(function()
+        {
+          this.setCustomValidity('')
+        })
       }
     })
   })

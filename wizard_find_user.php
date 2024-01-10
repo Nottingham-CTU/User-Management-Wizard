@@ -68,9 +68,9 @@ if ( ! empty( $_POST ) )
 		{
 			header( 'Location: ' .
 			        $module->getUrl( 'wizard_create_user.php?usertype=e' .
-			                         '&firstname=' . rawurlencode( $_POST['firstname'] ) .
-			                         '&lastname=' . rawurlencode( $_POST['lastname'] ) .
-			                         '&email=' . rawurlencode( $_POST['email'] ) ) );
+			                         '&firstname=' . rawurlencode( trim( $_POST['firstname'] ) ) .
+			                         '&lastname=' . rawurlencode( trim( $_POST['lastname'] ) ) .
+			                         '&email=' . rawurlencode( trim( $_POST['email'] ) ) ) );
 			exit;
 		}
 		// Retrieve the records from the user search.
@@ -85,33 +85,7 @@ if ( ! empty( $_POST ) )
 
 if ( ! $showSearch )
 {
-	$projectSettings = [ 'project-id' => $module->getSystemSetting( 'project-id' ),
-	                     'project-exclude' => $module->getSystemSetting( 'project-exclude' ) ];
-	$excludedProjects = [];
-	for ( $i = 0; $i < count( $projectSettings['project-id'] ); $i++ )
-	{
-		if ( $projectSettings['project-exclude'][$i] && $projectSettings['project-id'][$i] != '' )
-		{
-			$excludedProjects[] = $projectSettings['project-id'][$i];
-		}
-	}
-	$queryUserProjects = $module->query( 'SELECT project_id, app_title FROM redcap_projects ' .
-	                                     'WHERE completed_time IS NULL AND project_id NOT IN ' .
-	                                     '(SELECT project_id FROM redcap_projects_templates)' .
-	                                     ( SUPER_USER == 1 ? '' : ( ' AND purpose = 2 AND ' .
-	                                       'project_id IN ( SELECT project_id ' .
-	                                       'FROM redcap_user_rights WHERE username = ? AND ' .
-	                                       '( expiration IS NULL OR expiration > NOW() ) )' ) ) .
-	                                     ' ORDER BY if( purpose = 2, 0, 1 ), app_title',
-	                                     ( SUPER_USER == 1 ? [] : [ USERID ] ) );
-	$listUserProjects = [];
-	while ( $resUserProjects = $queryUserProjects->fetch_assoc() )
-	{
-		if ( ! in_array( $resUserProjects['project_id'], $excludedProjects ) )
-		{
-			$listUserProjects[ $resUserProjects['project_id'] ] = $resUserProjects['app_title'];
-		}
-	}
+	$listUserProjects = $module->getAccessibleProjects( USERID );
 }
 
 $HtmlPage = new HtmlPage();
@@ -160,9 +134,9 @@ if ( $showSearch )
 <p>
  <b>Can't find the user you're looking for?</b>
  <a href="<?php echo $module->getUrl( 'wizard_create_user.php?usertype=e' .
-                                      '&firstname=' . rawurlencode( $_POST['firstname'] ) .
-                                      '&lastname=' . rawurlencode( $_POST['lastname'] ) .
-                                      '&email=' . rawurlencode( $_POST['email'] ) );
+                                      '&firstname=' . rawurlencode( trim( $_POST['firstname'] ) ) .
+                                      '&lastname=' . rawurlencode( trim( $_POST['lastname'] ) ) .
+                                      '&email=' . rawurlencode( trim( $_POST['email'] ) ) );
 ?>">Create a new user account</a>
 </p>
 <p>&nbsp;</p>
@@ -182,6 +156,8 @@ else
 {
 
 ?>
+<h2><i class="fas fa-users"></i> User Management Wizard</h2>
+<p>&nbsp;</p>
 <h3>Enter User Details</h3>
 <p>&nbsp;</p>
 <p>Please choose the type of user:</p>
