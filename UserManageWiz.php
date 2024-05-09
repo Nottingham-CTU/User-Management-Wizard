@@ -400,6 +400,56 @@ $(function()
 
 
 
+	// Reset a user's password.
+	public function resetUserPassword( $username )
+	{
+		// Get user information.
+		$infoUser = $module->query( 'SELECT ui_id, user_lastlogin FROM redcap_user_information ' .
+		                            'WHERE username = ?', [ $username ] )->fetch_assoc();
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Perform password reset.
+		if ( $infoUser['user_lastlogin'] == '' )
+		{
+			// Not logged in yet, just resend account creation email.
+			$curl = curl_init( self::VERSION_PATH . 'ControlCenter/view_users.php?' .
+			                   'criteria_search=1&msg=admin_save&d=&search_term=&search_attr=' );
+			$this->configureCurl( $curl, $sessionID );
+			curl_setopt( $curl, CURLOPT_POST, true );
+			curl_setopt( $curl, CURLOPT_POSTFIELDS,
+			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) .
+			                    '&uiid_' . rawurlencode( $infoUser['ui_id'] ) . '=on' .
+			                    '&type=' . rawurlencode( 'resend account creation email' ) );
+		}
+		else
+		{
+			// Previously logged in, send password reset.
+			$curl = curl_init( self::VERSION_PATH . 'ControlCenter/user_controls_ajax.php?' .
+			                   'action=reset_password&username=' . rawurlencode( $username ) );
+			$this->configureCurl( $curl, $sessionID );
+			curl_setopt( $curl, CURLOPT_POST, true );
+			curl_setopt( $curl, CURLOPT_POSTFIELDS,
+			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		}
+		curl_exec( $curl );
+		curl_close( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
+		// Write the action to the log.
+		if ( $infoUser['user_lastlogin'] == '' )
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                  "Resent account creation email for '$username' by '" . USERID . "'" );
+		}
+		else
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Password reset for user '$username' by '" . USERID . "'" );
+		}
+	}
+
+
+
 	// Add bold formatting to any instances of $query found within $string.
 	// Used for highlighting search terms within results.
 	public function searchHighlight( $string, $query )

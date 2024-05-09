@@ -24,7 +24,9 @@ $listAccessibleProjects = $module->getAccessibleProjects( USERID );
 
 
 // Get the user information.
-$infoUser = $module->query( 'SELECT * FROM redcap_user_information WHERE username = ?',
+$infoUser = $module->query( 'SELECT rui.*, if( exists( SELECT 1 FROM redcap_auth ra ' .
+                            'WHERE ra.username = rui.username ), 1, 0 ) table_based ' .
+                            'FROM redcap_user_information rui WHERE username = ?',
                             [ $_GET['username'] ] )->fetch_assoc();
 
 $internalUserRegex = $module->getSystemSetting( 'internal-user-regex' );
@@ -296,6 +298,12 @@ if ( ! empty( $_POST ) )
 		// Update the comments on the user record.
 		$module->setUserComments( $_GET['username'], $_POST['comments'] );
 	}
+	if ( $_POST['action'] == 'reset_password' )
+	{
+		// Perform a password reset.
+		$module->resetUserPassword( $_GET['username'] );
+		$_SERVER['REQUEST_URI'] += '&resetpw=1'
+	}
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
 	$module->setUserProjectList( $_GET['username'] );
@@ -494,6 +502,35 @@ echo $infoUser['user_lastlogin'] == '' ? 'never' : date( 'd M Y H:i',
                                                          strtotime( $infoUser['user_lastlogin'] ) );
 ?></td>
  </tr>
+<?php
+if ( $infoUser['table_based'] == 1 )
+{
+?>
+ <tr>
+  <td>
+<?php
+	if ( isset( $_GET['resetpw'] ) )
+	{
+?>
+   User password reset successfully.
+<?php
+	}
+else
+	{
+?>
+   <form method="post">
+    <input type="submit" value="Reset user password"
+           onclick="return confirm('Are you sure you want to reset this user\'s password?')">
+    <input type="hidden" name="action" value="reset_password">
+   </form>
+<?php
+	}
+?>
+  </td>
+ </tr>
+<?php
+}
+?>
 </table>
 <?php
 
