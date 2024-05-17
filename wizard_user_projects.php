@@ -202,6 +202,47 @@ if ( ! empty( $_POST ) )
 			               $fromUser['user_firstname'] . ' ' . $fromUser['user_lastname'] );
 		}
 	}
+	if ( $_POST['action'] == 'update_role' )
+	{
+		// Check the user is assigned to the project.
+		if ( $module->query( 'SELECT 1 FROM redcap_user_rights ' .
+		                     'WHERE username = ? AND project_id = ?',
+		                     [ $_GET['username'], $_POST['project_id'] ] )->num_rows == 0 )
+		{
+			echo 'Invalid request: user not assigned to project.';
+			exit;
+		}
+		// Check that the old and new roles are valid.
+		if ( SUPER_USER != 1 )
+		{
+			$projectAllowedRoles =
+				isset( $listProjectAllowedRoles[ $_POST['project_id'] ] )
+				? $listProjectAllowedRoles[ $_POST['project_id'] ] : $defaultAllowedRoles;
+			if ( $module->query( 'SELECT 1 FROM redcap_user_rights uri JOIN redcap_user_roles ' .
+			                     'uro ON uri.project_id = uro.project_id AND uri.role_id = ' .
+			                     'uro.role_id WHERE uri.project_id = ? AND uri.username = ? AND ' .
+			                     'uro.role_name IN (' .
+			                     substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) . ')',
+			                     array_merge( [ $_POST['project_id'], $_GET['username'] ],
+			                                  $projectAllowedRoles ) )->num_rows == 0 )
+			{
+				echo 'Invalid request: cannot change role for this user.';
+				exit;
+			}
+			if ( $module->query( 'SELECT role_id FROM redcap_user_roles ' .
+			                     'WHERE project_id = ? AND role_id = ? ' .
+			                     'AND role_name IN (' .
+			                     substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) . ')',
+			                     array_merge( [ $_POST['project_id'], $_POST['role_id'] ],
+			                                  $projectAllowedRoles ) )->num_rows == 0 )
+			{
+				echo 'Invalid request: cannot assign user to selected role.';
+				exit;
+			}
+		}
+		// Perform the role change.
+		$module->changeUserRole( $_GET['username'], $_POST['project_id'], $_POST['role_id'] );
+	}
 	if ( $_POST['action'] == 'update_dags' )
 	{
 		// Check the user is assigned to the project.

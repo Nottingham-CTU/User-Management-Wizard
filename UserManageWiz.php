@@ -276,6 +276,37 @@ $(function()
 
 
 
+	// Change the role the user is assigned to for a specific project.
+	public function changeUserRole( $username, $projectID, $roleID )
+	{
+		$projectID = intval( $projectID );
+		$currentDAG = $this->query( 'SELECT group_id FROM redcap_user_rights ' .
+		                            'WHERE project_id = ? AND username = ?',
+		                            [ $projectID, $username ] )->fetch_assoc();
+		$currentDAG = $currentDAG['group_id'] ?? '';
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Change user role.
+		$curl = curl_init( self::VERSION_PATH .
+		                   'UserRights/assign_user.php?pid=' . $projectID );
+		$this->configureCurl( $curl, $sessionID );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'username=' . rawurlencode( $username ) .
+		                                        '&role_id=' . rawurlencode( $roleID ) .
+		                                        '&group_id=' . rawurlencode( $currentDAG ) .
+		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		curl_exec( $curl );
+		curl_close( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
+		// Write the action to the project log.
+		\REDCap::logEvent( 'User Management Wizard',
+		                   "Role changed for user '$username' by '" . USERID . "'", null, null,
+		                   null, $projectID );
+	}
+
+
+
 	// Create an API token for the specified user and project.
 	// This is intended only to allow the user to use the mobile app. The token will not be returned
 	// by this function as the user is not expected to use it directly.
