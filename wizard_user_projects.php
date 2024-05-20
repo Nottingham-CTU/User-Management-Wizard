@@ -23,6 +23,20 @@ if ( ! isset( $_GET['username'] ) ||
 $listAccessibleProjects = $module->getAccessibleProjects( USERID );
 
 
+// Get the list of projects where the user can switch their own role using the role switcher.
+$listProjectsRoleSwitcher = [];
+$queryRoleSwitcher = $module->query( 'SELECT project_id FROM redcap_external_module_settings ems ' .
+                                     'JOIN redcap_external_modules em ON ems.external_module_id =' .
+                                     ' em.external_module_id WHERE em.directory_prefix = ' .
+                                     "'role_switcher' AND `key` = 'user-roles' AND " .
+                                     'JSON_EXTRACT(`value`, ?) IS NOT NULL',
+                                     [ '$."' . $_GET['username'] .'"' ] );
+while ( $infoRoleSwitcher = $queryRoleSwitcher->fetch_assoc() )
+{
+	$listProjectsRoleSwitcher[] = $infoRoleSwitcher['project_id'];
+}
+
+
 // Get the user information.
 $infoUser = $module->query( 'SELECT rui.*, if( exists( SELECT 1 FROM redcap_auth ra ' .
                             'WHERE ra.username = rui.username ), 1, 0 ) table_based ' .
@@ -212,6 +226,12 @@ if ( ! empty( $_POST ) )
 			echo 'Invalid request: user not assigned to project.';
 			exit;
 		}
+		// Check that the user cannot change their own role with the role switcher.
+		if ( in_array( $_POST['project_id'], $listProjectsRoleSwitcher ) )
+		{
+			echo 'Invalid request: role switcher is in use for this user/project.';
+			exit;
+		}
 		// Check that the old and new roles are valid.
 		if ( SUPER_USER != 1 )
 		{
@@ -251,6 +271,12 @@ if ( ! empty( $_POST ) )
 		                     [ $_GET['username'], $_POST['project_id'] ] )->num_rows == 0 )
 		{
 			echo 'Invalid request: user not assigned to project.';
+			exit;
+		}
+		// Check that the user cannot change their own role with the role switcher.
+		if ( in_array( $_POST['project_id'], $listProjectsRoleSwitcher ) )
+		{
+			echo 'Invalid request: role switcher is in use for this user/project.';
 			exit;
 		}
 		// Initialise the lists of DAGs to add and remove.
@@ -343,7 +369,7 @@ if ( ! empty( $_POST ) )
 	{
 		// Perform a password reset.
 		$module->resetUserPassword( $_GET['username'] );
-		$_SERVER['REQUEST_URI'] += '&resetpw=1'
+		$_SERVER['REQUEST_URI'] += '&resetpw=1';
 	}
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
@@ -384,8 +410,12 @@ foreach ( $listAccessibleProjects as $projectID => $projectName )
 		                [ $projectID, $_GET['username'] ] )->fetch_assoc();
 	if ( $infoProject )
 	{
-		// For each assigned project, fetch the record and add the DAG data.
+		// For each assigned project, fetch the record and add the roles/DAGs data.
 		$infoProject['dags'] = [];
+		$infoProject['roles'] = [];
+		$projectAllowedRoles =
+			isset( $listProjectAllowedRoles[ $infoProject['project_id'] ] )
+			? $listProjectAllowedRoles[ $infoProject['project_id'] ] : $defaultAllowedRoles;
 		$queryProjectDAG =
 			$module->query( 'SELECT group_id, group_name, if( group_id IN ( SELECT group_id FROM ' .
 			                'redcap_data_access_groups_users WHERE username = ? ), 1, 0 ) AS ' .
@@ -403,6 +433,23 @@ foreach ( $listAccessibleProjects as $projectID => $projectName )
 			else
 			{
 				$infoProject['dags'][] = $infoProjectDAG;
+			}
+		}
+		if ( ! empty( $projectAllowedRoles ) )
+		{
+			$queryProjectRole =
+				$module->query( 'SELECT role_id, role_name ' .
+				                'FROM redcap_user_roles WHERE project_id = ? ' .
+				                ( SUPER_USER == 1 ? '' :
+				                  ( 'AND role_name IN (' .
+				                    substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) .
+				                    ') ' ) ) .
+				                'ORDER BY role_name',
+				                array_merge( [ $infoProject['project_id'] ],
+				                             ( SUPER_USER == 1 ? [] : $projectAllowedRoles ) ) );
+			while ( $infoProjectRole = $queryProjectRole->fetch_assoc() )
+			{
+				$infoProject['roles'][] = $infoProjectRole;
 			}
 		}
 		// Add the last project access time to the record and add to the list of assigned projects.
@@ -622,10 +669,41 @@ foreach ( $listAssignedProjects as $infoProject )
 <?php
 	}
 ?>
- <p><b>Role:</b> <?php
-	echo $infoProject['role_name'] === null
-		 ? '<i>Custom role</i>' : $module->escapeHTML( $infoProject['role_name'] );
+
+ <form method="post">
+  <p><b>Role:</b> <?php
+	if ( $infoProject['role_name'] === null )
+	{
+		echo '<i>Custom role</i>';
+	}
+	else
+	{
+		echo '<span>', $module->escapeHTML( $infoProject['role_name'] ), ' </span>';
+		if ( ! in_array( $infoProject['project_id'], $listProjectsRoleSwitcher ) &&
+		     in_array( $infoProject['role_name'],
+		               $listProjectAllowedRoles[ $infoProject['project_id'] ] ?? [] ) )
+		{
+			echo '&nbsp;&nbsp;<a href="#" onclick="$(this).prev().css(\'display\',\'none\');',
+			     '$(this).css(\'display\',\'none\');$(this).next().css(\'display\',\'\');',
+			     'return false">Change</a>';
+			echo '<span style="display:none">';
+			echo '<select name="role_id" onchange="$(this).next().css(\'display\',\'\')">';
+			foreach ( $infoProject['roles'] as $infoRole )
+			{
+				echo '<option value="', $module->escapeHTML( $infoRole['role_id'] ), '"',
+				     ( $infoProject['role_name'] == $infoRole['role_name'] ? ' selected' : '' ),
+				     '>', $module->escapeHTML( $infoRole['role_name'] ), '</option>';
+			}
+			echo '</select> ';
+			echo '<input type="submit" value="Change Role" style="display:none">';
+			echo '<input type="hidden" name="project_id" value="',
+			     intval( $infoProject['project_id'] ), '">';
+			echo '<input type="hidden" name="action" value="update_role">';
+			echo '</span>';
+		}
+	}
 ?></p>
+ </form>
 <?php
 	if ( $infoProject['access_all_dags'] == 1 )
 	{
@@ -643,10 +721,17 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
  <p style="margin-bottom:5px">
   <b>DAGs:</b>
+<?php
+		if ( ! in_array( $infoProject['project_id'], $listProjectsRoleSwitcher ) )
+		{
+?>
   &nbsp;
   <a onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
               $(this).parent().next().next().css('display','');return false"
      href="#">Edit DAGs</a>
+<?php
+		}
+?>
  </p>
  <ul>
 <?php
