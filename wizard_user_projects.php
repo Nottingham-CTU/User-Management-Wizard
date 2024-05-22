@@ -87,7 +87,7 @@ while ( $resAPIToken = $queryAPIToken->fetch_assoc() )
 if ( ! empty( $_POST ) )
 {
 	// Check that the project is accessible (if applicable).
-	if ( $_POST['action'] != 'update_comments' &&
+	if ( $_POST['action'] != 'update_comments' && $_POST['action'] != 'reset_password' &&
 	     ! isset( $listAccessibleProjects[ $_POST['project_id'] ] ) )
 	{
 		echo 'Invalid request: project is not accessible.';
@@ -369,7 +369,7 @@ if ( ! empty( $_POST ) )
 	{
 		// Perform a password reset.
 		$module->resetUserPassword( $_GET['username'] );
-		$_SERVER['REQUEST_URI'] += '&resetpw=1';
+		$_SERVER['REQUEST_URI'] .= '&resetpw=1';
 	}
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
@@ -595,6 +595,7 @@ if ( $infoUser['table_based'] == 1 )
 {
 ?>
  <tr>
+  <th></th>
   <td>
 <?php
 	if ( isset( $_GET['resetpw'] ) )
@@ -986,9 +987,10 @@ if ( SUPER_USER == 1 )
     })
   })
   $('head').append('<style type="text/css">.mod-umw-projfrm{background:#f7f7f7;padding:1px 12px;' +
-                   'border-radius:10px} .mod-umw-projfrm > :first-child{display:flex;' +
-                   'justify-content:space-between} .mod-umw-trhover:hover{background:#ddd} ' +
-                   '.mod-umw-trhover td {padding:3px}</style>')
+                   'border-radius:10px;border:solid 1px #ccc} ' +
+                   '.mod-umw-projfrm > :first-child{display:flex;justify-content:space-between} ' +
+                   '.mod-umw-trhover:hover{background:#ddd} .mod-umw-trhover td {padding:3px}' +
+                   '</style>')
   var vGrantAPIDialog = $('<div>Are you sure you want to grant mobile app access for ' +
                           '<br><span></span>?</div>')
   var vGrantButton = null

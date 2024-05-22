@@ -435,8 +435,8 @@ $(function()
 	public function resetUserPassword( $username )
 	{
 		// Get user information.
-		$infoUser = $module->query( 'SELECT ui_id, user_lastlogin FROM redcap_user_information ' .
-		                            'WHERE username = ?', [ $username ] )->fetch_assoc();
+		$infoUser = $this->query( 'SELECT ui_id, user_lastlogin FROM redcap_user_information ' .
+		                          'WHERE username = ?', [ $username ] )->fetch_assoc();
 		// Start administrative session.
 		$sessionID = $this->startUserSession();
 		// Perform password reset.
