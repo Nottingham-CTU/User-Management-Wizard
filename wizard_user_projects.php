@@ -682,7 +682,9 @@ foreach ( $listAssignedProjects as $infoProject )
 		echo '<span>', $module->escapeHTML( $infoProject['role_name'] ), ' </span>';
 		if ( ! in_array( $infoProject['project_id'], $listProjectsRoleSwitcher ) &&
 		     in_array( $infoProject['role_name'],
-		               $listProjectAllowedRoles[ $infoProject['project_id'] ] ?? [] ) )
+		               $listProjectAllowedRoles[ $infoProject['project_id'] ]
+		                                                                ?? $defaultAllowedRoles ) &&
+		     count( $infoProject['roles'] ) > 1 )
 		{
 			echo '&nbsp;&nbsp;<a href="#" onclick="$(this).prev().css(\'display\',\'none\');',
 			     '$(this).css(\'display\',\'none\');$(this).next().css(\'display\',\'\');',
