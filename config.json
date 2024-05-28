@@ -3,7 +3,8 @@
 	"namespace" : "Nottingham\\UserManageWiz",
 	"description" : "Provide a simple tool to allow a defined set of users to add new users to the system and/or specific projects.",
 	"permissions" : [
-		"redcap_every_page_top"
+		"redcap_every_page_top",
+		"redcap_module_project_enable"
 	],
 	"framework-version" : 6,
 	"compatibility" : { "redcap-version-min" : "10.6.11", "php-version-min" : "7.4.0" },

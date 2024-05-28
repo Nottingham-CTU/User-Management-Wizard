@@ -51,6 +51,14 @@ $(function()
 
 
 
+	// Prohibit enabling this module on projects.
+	public function redcap_module_project_enable( $version, $project_id )
+	{
+		$this->removeProjectSetting( 'enabled', $project_id );
+	}
+
+
+
 	// Check if the current user is allowed to access the user management wizard.
 	public function isAccessAllowed()
 	{
