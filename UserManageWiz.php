@@ -51,6 +51,14 @@ $(function()
 
 
 
+	// Prohibit enabling this module on projects.
+	public function redcap_module_project_enable( $version, $project_id )
+	{
+		$this->removeProjectSetting( 'enabled', $project_id );
+	}
+
+
+
 	// Check if the current user is allowed to access the user management wizard.
 	public function isAccessAllowed()
 	{
@@ -276,6 +284,37 @@ $(function()
 
 
 
+	// Change the role the user is assigned to for a specific project.
+	public function changeUserRole( $username, $projectID, $roleID )
+	{
+		$projectID = intval( $projectID );
+		$currentDAG = $this->query( 'SELECT group_id FROM redcap_user_rights ' .
+		                            'WHERE project_id = ? AND username = ?',
+		                            [ $projectID, $username ] )->fetch_assoc();
+		$currentDAG = $currentDAG['group_id'] ?? '';
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Change user role.
+		$curl = curl_init( self::VERSION_PATH .
+		                   'UserRights/assign_user.php?pid=' . $projectID );
+		$this->configureCurl( $curl, $sessionID );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'username=' . rawurlencode( $username ) .
+		                                        '&role_id=' . rawurlencode( $roleID ) .
+		                                        '&group_id=' . rawurlencode( $currentDAG ) .
+		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		curl_exec( $curl );
+		curl_close( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
+		// Write the action to the project log.
+		\REDCap::logEvent( 'User Management Wizard',
+		                   "Role changed for user '$username' by '" . USERID . "'", null, null,
+		                   null, $projectID );
+	}
+
+
+
 	// Create an API token for the specified user and project.
 	// This is intended only to allow the user to use the mobile app. The token will not be returned
 	// by this function as the user is not expected to use it directly.
@@ -396,6 +435,56 @@ $(function()
 			return '';
 		}
 		return $comments[0];
+	}
+
+
+
+	// Reset a user's password.
+	public function resetUserPassword( $username )
+	{
+		// Get user information.
+		$infoUser = $this->query( 'SELECT ui_id, user_lastlogin FROM redcap_user_information ' .
+		                          'WHERE username = ?', [ $username ] )->fetch_assoc();
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Perform password reset.
+		if ( $infoUser['user_lastlogin'] == '' )
+		{
+			// Not logged in yet, just resend account creation email.
+			$curl = curl_init( self::VERSION_PATH . 'ControlCenter/view_users.php?' .
+			                   'criteria_search=1&msg=admin_save&d=&search_term=&search_attr=' );
+			$this->configureCurl( $curl, $sessionID );
+			curl_setopt( $curl, CURLOPT_POST, true );
+			curl_setopt( $curl, CURLOPT_POSTFIELDS,
+			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) .
+			                    '&uiid_' . rawurlencode( $infoUser['ui_id'] ) . '=on' .
+			                    '&type=' . rawurlencode( 'resend account creation email' ) );
+		}
+		else
+		{
+			// Previously logged in, send password reset.
+			$curl = curl_init( self::VERSION_PATH . 'ControlCenter/user_controls_ajax.php?' .
+			                   'action=reset_password&username=' . rawurlencode( $username ) );
+			$this->configureCurl( $curl, $sessionID );
+			curl_setopt( $curl, CURLOPT_POST, true );
+			curl_setopt( $curl, CURLOPT_POSTFIELDS,
+			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		}
+		curl_exec( $curl );
+		curl_close( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
+		// Write the action to the log.
+		if ( $infoUser['user_lastlogin'] == '' )
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                  "Resent account creation email for '$username' by '" . USERID . "'" );
+		}
+		else
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Password reset for user '$username' by '" . USERID . "'" );
+		}
 	}
 
 

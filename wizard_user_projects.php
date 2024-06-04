@@ -23,8 +23,24 @@ if ( ! isset( $_GET['username'] ) ||
 $listAccessibleProjects = $module->getAccessibleProjects( USERID );
 
 
+// Get the list of projects where the user can switch their own role using the role switcher.
+$listProjectsRoleSwitcher = [];
+$queryRoleSwitcher = $module->query( 'SELECT project_id FROM redcap_external_module_settings ems ' .
+                                     'JOIN redcap_external_modules em ON ems.external_module_id =' .
+                                     ' em.external_module_id WHERE em.directory_prefix = ' .
+                                     "'role_switcher' AND `key` = 'user-roles' AND " .
+                                     'JSON_EXTRACT(`value`, ?) IS NOT NULL',
+                                     [ '$."' . $_GET['username'] .'"' ] );
+while ( $infoRoleSwitcher = $queryRoleSwitcher->fetch_assoc() )
+{
+	$listProjectsRoleSwitcher[] = $infoRoleSwitcher['project_id'];
+}
+
+
 // Get the user information.
-$infoUser = $module->query( 'SELECT * FROM redcap_user_information WHERE username = ?',
+$infoUser = $module->query( 'SELECT rui.*, if( exists( SELECT 1 FROM redcap_auth ra ' .
+                            'WHERE ra.username = rui.username ), 1, 0 ) table_based ' .
+                            'FROM redcap_user_information rui WHERE username = ?',
                             [ $_GET['username'] ] )->fetch_assoc();
 
 $internalUserRegex = $module->getSystemSetting( 'internal-user-regex' );
@@ -71,7 +87,7 @@ while ( $resAPIToken = $queryAPIToken->fetch_assoc() )
 if ( ! empty( $_POST ) )
 {
 	// Check that the project is accessible (if applicable).
-	if ( $_POST['action'] != 'update_comments' &&
+	if ( $_POST['action'] != 'update_comments' && $_POST['action'] != 'reset_password' &&
 	     ! isset( $listAccessibleProjects[ $_POST['project_id'] ] ) )
 	{
 		echo 'Invalid request: project is not accessible.';
@@ -200,6 +216,53 @@ if ( ! empty( $_POST ) )
 			               $fromUser['user_firstname'] . ' ' . $fromUser['user_lastname'] );
 		}
 	}
+	if ( $_POST['action'] == 'update_role' )
+	{
+		// Check the user is assigned to the project.
+		if ( $module->query( 'SELECT 1 FROM redcap_user_rights ' .
+		                     'WHERE username = ? AND project_id = ?',
+		                     [ $_GET['username'], $_POST['project_id'] ] )->num_rows == 0 )
+		{
+			echo 'Invalid request: user not assigned to project.';
+			exit;
+		}
+		// Check that the user cannot change their own role with the role switcher.
+		if ( in_array( $_POST['project_id'], $listProjectsRoleSwitcher ) )
+		{
+			echo 'Invalid request: role switcher is in use for this user/project.';
+			exit;
+		}
+		// Check that the old and new roles are valid.
+		if ( SUPER_USER != 1 )
+		{
+			$projectAllowedRoles =
+				isset( $listProjectAllowedRoles[ $_POST['project_id'] ] )
+				? $listProjectAllowedRoles[ $_POST['project_id'] ] : $defaultAllowedRoles;
+			if ( $module->query( 'SELECT 1 FROM redcap_user_rights uri JOIN redcap_user_roles ' .
+			                     'uro ON uri.project_id = uro.project_id AND uri.role_id = ' .
+			                     'uro.role_id WHERE uri.project_id = ? AND uri.username = ? AND ' .
+			                     'uro.role_name IN (' .
+			                     substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) . ')',
+			                     array_merge( [ $_POST['project_id'], $_GET['username'] ],
+			                                  $projectAllowedRoles ) )->num_rows == 0 )
+			{
+				echo 'Invalid request: cannot change role for this user.';
+				exit;
+			}
+			if ( $module->query( 'SELECT role_id FROM redcap_user_roles ' .
+			                     'WHERE project_id = ? AND role_id = ? ' .
+			                     'AND role_name IN (' .
+			                     substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) . ')',
+			                     array_merge( [ $_POST['project_id'], $_POST['role_id'] ],
+			                                  $projectAllowedRoles ) )->num_rows == 0 )
+			{
+				echo 'Invalid request: cannot assign user to selected role.';
+				exit;
+			}
+		}
+		// Perform the role change.
+		$module->changeUserRole( $_GET['username'], $_POST['project_id'], $_POST['role_id'] );
+	}
 	if ( $_POST['action'] == 'update_dags' )
 	{
 		// Check the user is assigned to the project.
@@ -208,6 +271,12 @@ if ( ! empty( $_POST ) )
 		                     [ $_GET['username'], $_POST['project_id'] ] )->num_rows == 0 )
 		{
 			echo 'Invalid request: user not assigned to project.';
+			exit;
+		}
+		// Check that the user cannot change their own role with the role switcher.
+		if ( in_array( $_POST['project_id'], $listProjectsRoleSwitcher ) )
+		{
+			echo 'Invalid request: role switcher is in use for this user/project.';
 			exit;
 		}
 		// Initialise the lists of DAGs to add and remove.
@@ -296,6 +365,12 @@ if ( ! empty( $_POST ) )
 		// Update the comments on the user record.
 		$module->setUserComments( $_GET['username'], $_POST['comments'] );
 	}
+	if ( $_POST['action'] == 'reset_password' )
+	{
+		// Perform a password reset.
+		$module->resetUserPassword( $_GET['username'] );
+		$_SERVER['REQUEST_URI'] .= '&resetpw=1';
+	}
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
 	$module->setUserProjectList( $_GET['username'] );
@@ -335,8 +410,12 @@ foreach ( $listAccessibleProjects as $projectID => $projectName )
 		                [ $projectID, $_GET['username'] ] )->fetch_assoc();
 	if ( $infoProject )
 	{
-		// For each assigned project, fetch the record and add the DAG data.
+		// For each assigned project, fetch the record and add the roles/DAGs data.
 		$infoProject['dags'] = [];
+		$infoProject['roles'] = [];
+		$projectAllowedRoles =
+			isset( $listProjectAllowedRoles[ $infoProject['project_id'] ] )
+			? $listProjectAllowedRoles[ $infoProject['project_id'] ] : $defaultAllowedRoles;
 		$queryProjectDAG =
 			$module->query( 'SELECT group_id, group_name, if( group_id IN ( SELECT group_id FROM ' .
 			                'redcap_data_access_groups_users WHERE username = ? ), 1, 0 ) AS ' .
@@ -354,6 +433,23 @@ foreach ( $listAccessibleProjects as $projectID => $projectName )
 			else
 			{
 				$infoProject['dags'][] = $infoProjectDAG;
+			}
+		}
+		if ( ! empty( $projectAllowedRoles ) )
+		{
+			$queryProjectRole =
+				$module->query( 'SELECT role_id, role_name ' .
+				                'FROM redcap_user_roles WHERE project_id = ? ' .
+				                ( SUPER_USER == 1 ? '' :
+				                  ( 'AND role_name IN (' .
+				                    substr( str_repeat(',?',count( $projectAllowedRoles )), 1 ) .
+				                    ') ' ) ) .
+				                'ORDER BY role_name',
+				                array_merge( [ $infoProject['project_id'] ],
+				                             ( SUPER_USER == 1 ? [] : $projectAllowedRoles ) ) );
+			while ( $infoProjectRole = $queryProjectRole->fetch_assoc() )
+			{
+				$infoProject['roles'][] = $infoProjectRole;
 			}
 		}
 		// Add the last project access time to the record and add to the list of assigned projects.
@@ -494,6 +590,36 @@ echo $infoUser['user_lastlogin'] == '' ? 'never' : date( 'd M Y H:i',
                                                          strtotime( $infoUser['user_lastlogin'] ) );
 ?></td>
  </tr>
+<?php
+if ( $infoUser['table_based'] == 1 )
+{
+?>
+ <tr>
+  <th></th>
+  <td>
+<?php
+	if ( isset( $_GET['resetpw'] ) )
+	{
+?>
+   User password reset successfully.
+<?php
+	}
+else
+	{
+?>
+   <form method="post">
+    <input type="submit" value="Reset user password"
+           onclick="return confirm('Are you sure you want to reset this user\'s password?')">
+    <input type="hidden" name="action" value="reset_password">
+   </form>
+<?php
+	}
+?>
+  </td>
+ </tr>
+<?php
+}
+?>
 </table>
 <?php
 
@@ -544,10 +670,43 @@ foreach ( $listAssignedProjects as $infoProject )
 <?php
 	}
 ?>
- <p><b>Role:</b> <?php
-	echo $infoProject['role_name'] === null
-		 ? '<i>Custom role</i>' : $module->escapeHTML( $infoProject['role_name'] );
+
+ <form method="post">
+  <p><b>Role:</b> <?php
+	if ( $infoProject['role_name'] === null )
+	{
+		echo '<i>Custom role</i>';
+	}
+	else
+	{
+		echo '<span>', $module->escapeHTML( $infoProject['role_name'] ), ' </span>';
+		if ( ! in_array( $infoProject['project_id'], $listProjectsRoleSwitcher ) &&
+		     in_array( $infoProject['role_name'],
+		               $listProjectAllowedRoles[ $infoProject['project_id'] ]
+		                                                                ?? $defaultAllowedRoles ) &&
+		     count( $infoProject['roles'] ) > 1 )
+		{
+			echo '&nbsp;&nbsp;<a href="#" onclick="$(this).prev().css(\'display\',\'none\');',
+			     '$(this).css(\'display\',\'none\');$(this).next().css(\'display\',\'\');',
+			     'return false">Change</a>';
+			echo '<span style="display:none">';
+			echo '<select name="role_id" onchange="$(this).next().css(\'display\',\'\')">';
+			foreach ( $infoProject['roles'] as $infoRole )
+			{
+				echo '<option value="', $module->escapeHTML( $infoRole['role_id'] ), '"',
+				     ( $infoProject['role_name'] == $infoRole['role_name'] ? ' selected' : '' ),
+				     '>', $module->escapeHTML( $infoRole['role_name'] ), '</option>';
+			}
+			echo '</select> ';
+			echo '<input type="submit" value="Change Role" style="display:none">';
+			echo '<input type="hidden" name="project_id" value="',
+			     intval( $infoProject['project_id'] ), '">';
+			echo '<input type="hidden" name="action" value="update_role">';
+			echo '</span>';
+		}
+	}
 ?></p>
+ </form>
 <?php
 	if ( $infoProject['access_all_dags'] == 1 )
 	{
@@ -565,10 +724,17 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
  <p style="margin-bottom:5px">
   <b>DAGs:</b>
+<?php
+		if ( ! in_array( $infoProject['project_id'], $listProjectsRoleSwitcher ) )
+		{
+?>
   &nbsp;
   <a onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
               $(this).parent().next().next().css('display','');return false"
      href="#">Edit DAGs</a>
+<?php
+		}
+?>
  </p>
  <ul>
 <?php
@@ -823,9 +989,10 @@ if ( SUPER_USER == 1 )
     })
   })
   $('head').append('<style type="text/css">.mod-umw-projfrm{background:#f7f7f7;padding:1px 12px;' +
-                   'border-radius:10px} .mod-umw-projfrm > :first-child{display:flex;' +
-                   'justify-content:space-between} .mod-umw-trhover:hover{background:#ddd} ' +
-                   '.mod-umw-trhover td {padding:3px}</style>')
+                   'border-radius:10px;border:solid 1px #ccc} ' +
+                   '.mod-umw-projfrm > :first-child{display:flex;justify-content:space-between} ' +
+                   '.mod-umw-trhover:hover{background:#ddd} .mod-umw-trhover td {padding:3px}' +
+                   '</style>')
   var vGrantAPIDialog = $('<div>Are you sure you want to grant mobile app access for ' +
                           '<br><span></span>?</div>')
   var vGrantButton = null
