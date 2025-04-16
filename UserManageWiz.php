@@ -62,6 +62,19 @@ $(function()
 	// Check if the current user is allowed to access the user management wizard.
 	public function isAccessAllowed()
 	{
+		$infoConfig =
+			$this->query( 'SELECT (SELECT `value` FROM redcap_config WHERE field_name = ?) 2fa, ' .
+			              '(SELECT `value` FROM redcap_config WHERE field_name = ?) ip, ' .
+			              '(SELECT `value` FROM redcap_config WHERE field_name = ?) addrs',
+			              [ 'two_factor_auth_enabled', 'two_factor_auth_ip_check_enabled',
+			                'two_factor_auth_ip_range' ] )->fetch_assoc();
+		if ( $infoConfig['2fa'] == '1' && ( $infoConfig['ip'] == '0' ||
+		     preg_match( '/(^|[^0-9a-f.:])(127\.0\.0\.1|::1|' .
+		                   preg_quote( $_SERVER['SERVER_ADDR'], '/' ) . ')([^0-9a-f.:]|$)/',
+		                   $infoConfig['addrs'] ) === 0 ) )
+		{
+			return false;
+		}
 		$listUsers = $this->getSystemSetting( 'wizard-users' );
 		if ( $listUsers == '' || ! defined( 'USERID' ) || USERID == '' )
 		{
