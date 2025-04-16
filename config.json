@@ -1,7 +1,7 @@
 {
 	"name" : "User Management Wizard",
 	"namespace" : "Nottingham\\UserManageWiz",
-	"description" : "Provide a simple tool to allow a defined set of users to add new users to the system and/or specific projects.",
+	"description" : "A simple tool for configuring REDCap users and their project/DAG assignments.<br>Any user granted access to the User Management Wizard can add new users and assign users to defined roles in their projects, without needing to be granted neither the manage user accounts administrative permission nor the project-level user rights permission.",
 	"permissions" : [
 		"redcap_every_page_top",
 		"redcap_module_project_enable"
@@ -75,6 +75,16 @@
 		{
 			"key" : "internal-email-regex",
 			"name" : "Regular expression of internal email addresses",
+			"type" : "text"
+		},
+		{
+			"key" : "internal-user-heading",
+			"name" : "Custom heading (Internal User)",
+			"type" : "text"
+		},
+		{
+			"key" : "external-user-heading",
+			"name" : "Custom heading (External User)",
 			"type" : "text"
 		},
 		{

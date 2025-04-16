@@ -182,7 +182,8 @@ else
 		if ( $showExternal )
 		{
 ?>
-  <h4>Internal User</h4>
+  <h4><?php echo $module->escapeHTML( $module->getSystemSetting('internal-user-heading') )
+                 ?: 'Internal User'; ?></h4>
 <?php
 		}
 ?>
@@ -212,7 +213,8 @@ else
 		if ( $showInternal )
 		{
 ?>
-  <h4>External User</h4>
+  <h4><?php echo $module->escapeHTML( $module->getSystemSetting('external-user-heading') )
+                 ?: 'External User'; ?></h4>
 <?php
 		}
 ?>
