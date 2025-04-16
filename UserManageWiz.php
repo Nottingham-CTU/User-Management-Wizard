@@ -376,10 +376,12 @@ $(function()
 		$canQualImp = $this->getSystemSetting( 'access-qual-imp' );
 		$purposeSQL = 'purpose = 2' . ( $canOpSup ? ' OR purpose = 4' : '' ) .
 		                              ( $canQualImp ? ' OR purpose = 3' : '' );
+		$canAnalysis = $this->getSystemSetting( 'access-analysis' );
+		$statusSQL = ( ( $canAnalysis || $isAdmin ) ? '' : ' AND status <> 2' );
 		// Get project IDs and titles for accessible projects.
 		$listProjects = [];
-		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects ' .
-		                              'WHERE completed_time IS NULL AND project_id ' .
+		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects WHERE ' .
+		                              'completed_time IS NULL' . $statusSQL . ' AND project_id ' .
 		                              'NOT IN (SELECT project_id FROM redcap_projects_templates) ' .
 		                              ( $isAdmin ? '' : ( 'AND (' . $purposeSQL . ') AND ' .
 		                                'project_id IN ( SELECT project_id ' .

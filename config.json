@@ -53,6 +53,11 @@
 			"type" : "checkbox"
 		},
 		{
+			"key" : "access-analysis",
+			"name" : "Standard users can access projects in Analysis/Cleanup status",
+			"type" : "checkbox"
+		},
+		{
 			"key" : "header2",
 			"name" : "<b>Wizard Configuration</b>",
 			"type" : "descriptive"
