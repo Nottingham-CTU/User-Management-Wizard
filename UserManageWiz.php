@@ -101,7 +101,7 @@ $(function()
 		                                        '&email=' . rawurlencode( $email ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// Close user session.
 		$this->endUserSession( $sessionID );
 		// If wizard user not an admin, set their username as the new user's sponsor.
@@ -140,7 +140,7 @@ $(function()
 		                                        '&display_on_email_users=on' .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Ensure that the user does NOT receive emails about system notifications.
@@ -163,7 +163,7 @@ $(function()
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'action=add&username=' . rawurlencode( $username ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 	}
@@ -191,7 +191,7 @@ $(function()
 		                    '&notify_email_role=' . intval( $userNotify ) .
 		                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// Clear any existing DAG switcher assignments which may remain if the user was previously
 		// assigned to this project.
 		$this->query( 'DELETE FROM redcap_data_access_groups_users ' .
@@ -211,7 +211,7 @@ $(function()
 				                    '&group_id=' . intval( $dag ) .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 			$curl = curl_init( self::VERSION_PATH .
 			                   'index.php?route=DataAccessGroupsController:saveUserDAG&pid=' .
@@ -223,7 +223,7 @@ $(function()
 			                    '&dag=' . intval( $dag ) . '&enabled=true' .
 			                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 			curl_exec( $curl );
-			curl_close( $curl );
+			unset( $curl );
 			$first = false;
 		}
 		// End administrative session.
@@ -257,7 +257,7 @@ $(function()
 				                    '&dag=' . intval( $dag ) . '&enabled=' . $enableDAG .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 		}
 		// Check that the user is assigned to a DAG which is within their DAG switcher assignments
@@ -284,7 +284,7 @@ $(function()
 				                    '&group_id=' . intval( $selectedDAG ) .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 		}
 		// End administrative session.
@@ -317,7 +317,7 @@ $(function()
 		                                        '&group_id=' . rawurlencode( $currentDAG ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the project log.
@@ -345,7 +345,7 @@ $(function()
 		curl_setopt( $curl, CURLOPT_POST, true );
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the project log.
@@ -486,7 +486,7 @@ $(function()
 			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		}
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the log.
