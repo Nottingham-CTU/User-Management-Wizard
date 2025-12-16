@@ -164,14 +164,12 @@ else
 ?>
 <h2><i class="fas fa-users"></i> User Management Wizard</h2>
 <p>&nbsp;</p>
-<h3>Enter User Details</h3>
+<h3 style="margin-bottom:14px">Enter User Details</h3>
 <?php
 	if ( $showInternal && $showExternal )
 	{
 ?>
-<p>&nbsp;</p>
-<p>Please choose the type of user:</p>
-<p>&nbsp;</p>
+<p style="margin-bottom:12px">Please choose the type of user:</p>
 <?php
 	}
 	if ( $showInternal )
@@ -244,8 +242,7 @@ else
 ?>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h3>Show Project Users</h3>
-<p>&nbsp;</p>
+<h3 style="margin-bottom:14px">Show Project Users</h3>
 <form method="post">
  <p>
  Select project:
@@ -264,6 +261,10 @@ else
  </p>
 </form>
 <p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3 style="margin-bottom:14px">Show Login History</h3>
+<a href="<?php echo $module->getUrl('login_history.php'); ?>">Show login history</a>
+<p>&nbsp;</p>
 
 <script type="text/javascript">
 $(function()
@@ -274,7 +275,7 @@ $(function()
   vUserSections.css( 'border-radius', '10px' )
   vUserSections.css( 'background', '#f7f7f7' )
 <?php
-	if ( $showInternal && ! $showExternal )
+	if ( $showInternal && $showExternal )
 	{
 ?>
   vUserSections.find( 'div.sectionDetails' ).css( 'display', 'none' )
