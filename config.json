@@ -58,6 +58,11 @@
 			"type" : "checkbox"
 		},
 		{
+			"key" : "assign-all-dags",
+			"name" : "Standard users can assign users to access all DAGs",
+			"type" : "checkbox"
+		},
+		{
 			"key" : "header2",
 			"name" : "<b>Wizard Configuration</b>",
 			"type" : "descriptive"

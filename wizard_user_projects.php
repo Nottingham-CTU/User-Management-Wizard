@@ -126,7 +126,8 @@ if ( ! empty( $_POST ) )
 		$listDAGNames = [];
 		if ( isset( $_POST['dag']['*'] ) ) // no assignment (all DAGs) selected
 		{
-			if ( count( $_POST['dag'] ) > 1 || SUPER_USER != 1 )
+			if ( count( $_POST['dag'] ) > 1 ||
+			     ( SUPER_USER != 1 && ! $module->getSystemSetting('assign-all-dags') ) )
 			{
 				echo 'Invalid request: not allowed to specify no assignment / all DAGs.';
 				exit;
@@ -149,7 +150,8 @@ if ( ! empty( $_POST ) )
 			}
 		}
 		// Check that the user is added to at least one DAG.
-		if ( SUPER_USER != 1 && count( $listDAGs ) == 0 )
+		if ( SUPER_USER != 1 && ! $module->getSystemSetting('assign-all-dags') &&
+		     count( $listDAGs ) == 0 )
 		{
 			echo 'Invalid request: user must be assigned to at least one DAG.';
 			exit;
@@ -938,7 +940,7 @@ $(function()
       {
         vDAGOptions = '<table>'
 <?php
-if ( SUPER_USER == 1 )
+if ( SUPER_USER == 1 || $module->getSystemSetting('assign-all-dags') )
 {
 ?>
         vDAGOptions += '<tr class="mod-umw-trhover"><td>'
