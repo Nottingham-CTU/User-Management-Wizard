@@ -87,7 +87,7 @@ while ( $resAPIToken = $queryAPIToken->fetch_assoc() )
 if ( ! empty( $_POST ) )
 {
 	// Check that the project is accessible (if applicable).
-	if ( $_POST['action'] != 'update_comments' && $_POST['action'] != 'reset_password' &&
+	if ( ! in_array( $_POST['action'], [ 'update_comments', 'reset_password', 'unsuspend' ] ) &&
 	     ! isset( $listAccessibleProjects[ $_POST['project_id'] ] ) )
 	{
 		echo 'Invalid request: project is not accessible.';
@@ -373,6 +373,23 @@ if ( ! empty( $_POST ) )
 		$module->resetUserPassword( $_GET['username'] );
 		$_SERVER['REQUEST_URI'] .= '&resetpw=1';
 	}
+	if ( $_POST['action'] == 'unsuspend' )
+	{
+		// Get the projects where the user is not expired.
+		$queryUnexpiredProjects = $module->query( 'SELECT project_id FROM redcap_user_rights ' .
+		                                          'WHERE username = ? AND ' .
+		                                          'expiration IS NULL OR expiration >= NOW()',
+		                                          [ $_GET['username'] ] );
+		// Expire the user on each project.
+		while ( $infoUnexpiredProjects = $queryUnexpiredProjects->fetch_assoc() )
+		{
+			$module->setUserProjectExpiry( $_GET['username'], $infoUnexpiredProjects['project_id'],
+			                               date( 'Y-m-d' ) );
+		}
+		// Unsuspend the user.
+		$module->unsuspendUser( $_GET['username'] );
+		$_SERVER['REQUEST_URI'] .= '&unsuspend=1';
+	}
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
 	$module->setUserProjectList( $_GET['username'] );
@@ -541,20 +558,6 @@ if ( $userNeedsAllowlist )
 
 }
 
-if ( $infoUser['user_suspended_time'] != '' ||
-     ( $infoUser['user_expiration'] != '' && $infoUser['user_expiration'] < date( 'Y-m-d' ) ) )
-{
-
-?>
-<p style="color:#990000;font-weight:bold">
- Warning: This user account is currently suspended and is therefore prevented from accessing
- REDCap. Please <?php echo SUPER_USER == 1 ? '' : 'ask an administrator to'; ?> un-suspend this
- user in the <?php echo $GLOBALS['lang']['global_07']; ?> if required.
-</p>
-<?php
-
-}
-
 ?>
 <table style="width:100%">
  <tr>
@@ -593,6 +596,44 @@ echo $infoUser['user_lastlogin'] == '' ? 'never' : date( 'd M Y H:i',
 ?></td>
  </tr>
 <?php
+
+if ( $infoUser['user_suspended_time'] != '' ||
+     ( $infoUser['user_expiration'] != '' && $infoUser['user_expiration'] < date( 'Y-m-d' ) ) )
+{
+
+?>
+ <tr>
+  <th></th>
+  <td>
+   <form method="post">
+    This user account is currently suspended.&nbsp;
+    <input type="submit" value="Unsuspend"
+           onclick="return confirm('Are you sure you want to unsuspend this user?')">
+    <input type="hidden" name="action" value="unsuspend">
+    <br>
+    Note: Using the unsuspend option will automatically expire this user's access to any projects
+    they currently have access to.<br>
+    They must be explicitly re-granted access to each of their assigned projects by
+    changing/clearing the expiry dates.
+   </form>
+  </td>
+ </tr>
+<?php
+
+}
+elseif ( isset( $_GET['unsuspend'] ) )
+{
+
+?>
+ <tr>
+  <th></th>
+  <td>
+   User unsuspended successfully.
+  </td>
+ </tr>
+<?php
+
+}
 if ( $infoUser['table_based'] == 1 )
 {
 ?>
@@ -606,7 +647,9 @@ if ( $infoUser['table_based'] == 1 )
    User password reset successfully.
 <?php
 	}
-else
+	elseif ( ! ( $infoUser['user_suspended_time'] != '' ||
+	             ( $infoUser['user_expiration'] != '' &&
+	               $infoUser['user_expiration'] < date( 'Y-m-d' ) ) ) )
 	{
 ?>
    <form method="post">

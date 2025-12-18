@@ -594,6 +594,26 @@ $(function()
 
 
 
+	// Unsuspend a suspended user.
+	public function unsuspendUser( $username )
+	{
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Submit unsuspend request.
+		$curl = curl_init( self::VERSION_PATH . 'ControlCenter/suspend_user.php' );
+		$this->configureCurl( $curl, $sessionID );
+		curl_setopt( $curl, CURLOPT_HTTPHEADER, ['X-Requested-With: XMLHttpRequest'] );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'suspend=0&username=' . rawurlencode( $username ) .
+		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		curl_exec( $curl );
+		unset( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
+	}
+
+
+
 	// Validation of the module settings.
 	public function validateSettings( $settings )
 	{
