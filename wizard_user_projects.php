@@ -354,7 +354,11 @@ if ( ! empty( $_POST ) )
 		{
 			$_POST['expiration'] = date( 'Y-m-d' );
 		}
-		if ( $_POST['expiration'] == '' )
+		if ( isset( $_POST['clear'] ) )
+		{
+			$_POST['expiration'] = '';
+		}
+		if ( $_POST['expiration'] == '' && ! isset( $_POST['clear'] ) )
 		{
 			echo 'Invalid request: expiration date not provided.';
 			exit;
@@ -869,26 +873,33 @@ foreach ( $listAssignedProjects as $infoProject )
    </span>
 <?php
 	}
-	elseif ( $infoProject['expiration'] > date( 'Y-m-d' ) )
+	else
 	{
+		$expireText = ( $infoProject['expiration'] > date( 'Y-m-d' ) ? 'will expire' : 'expired' );
+		$clExpText = 'Clear expiry' . ( $expireText == 'will expire' ? '' : ' (re-enable access)' );
 ?>
-   Access will expire on <?php echo date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.&nbsp;
+   Access <?php echo $expireText, ' on ',
+                     date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.&nbsp;
    <a onclick="$(this).css('display','none');$(this).next().css('display','');return false"
      href="#">Change expiration</a>
    <span style="display:none">
     <br><br>
-    &nbsp;&nbsp; <input type="date" name="expiration">
+    &nbsp;&nbsp; <input type="date" name="expiration" required>
     <input type="submit" value="Change expiration date">
-    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately">
+    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="clear" value="<?php echo $clExpText; ?>"
+                                   onclick="$(this).prev().prev().prop('required',false)">
+<?php
+		if ( $expireText == 'will expire' )
+		{
+?>
+    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
+                                   onclick="$(this).prev().prev().prev().prop('required',false)">
+<?php
+		}
+?>
     <input type="hidden" name="action" value="set_expire">
     <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
-<?php
-	}
-	else
-	{
-?>
-   Access expired on <?php echo date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.
 <?php
 	}
 ?>

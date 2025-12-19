@@ -548,8 +548,13 @@ $(function()
 		$infoUser = $this->query( 'SELECT 1 FROM redcap_user_rights ' .
 		                          'WHERE username = ? AND project_id = ?',
 		                          [ $username, $projectID ] )->fetch_assoc();
+		if ( $dateExpiry == '' )
+		{
+			$dateExpiry = null;
+		}
 		if ( $infoUser === null ||
-		     !preg_match( '/^2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|3[01])$/', $dateExpiry ) )
+		     ( $dateExpiry !== null &&
+		       !preg_match( '/^2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|3[01])$/', $dateExpiry ) ) )
 		{
 			return;
 		}
@@ -557,9 +562,18 @@ $(function()
 		              'WHERE username = ? AND project_id = ? LIMIT 1',
 		              [ $dateExpiry, $username, $projectID ] );
 		// Write the action to the project log.
-		\REDCap::logEvent( 'User Management Wizard',
-		                   "Access to project for user '$username' set to expire " .
-		                   "on $dateExpiry by '" . USERID . "'", null, null, null, $projectID );
+		if ( $dateExpiry === null )
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Expiry of access to project for user '$username' cleared " .
+			                   "by '" . USERID . "'", null, null, null, $projectID );
+		}
+		else
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Access to project for user '$username' set to expire " .
+			                   "on $dateExpiry by '" . USERID . "'", null, null, null, $projectID );
+		}
 	}
 
 
