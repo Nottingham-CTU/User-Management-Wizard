@@ -55,7 +55,7 @@ foreach ( $listLoginHistory as $infoLoginHistory )
 		            '">' . $username . '</a>';
 	}
 	$userType = '';
-	if ( $showInternal && $showExternal && $infoLoginHistory['username'] != '[not_valid_username]' )
+	if ( $showInternal && $showExternal && $infoLoginHistory['user'] != '[not_valid_username]' )
 	{
 		if ( $infoLoginHistory['tblusr'] )
 		{
