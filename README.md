@@ -28,6 +28,12 @@ and/or Quality Improvement projects in addition to Research projects.
 Select this option to allow standard users (non-administrators) to manage projects which have been
 placed into Analysis/Cleanup status.
 
+### Standard users can assign users to access all DAGs
+For projects with DAGs, select this option to allow standard users to assign users to access all
+DAGs (i.e. no DAG assignment). If this option is not selected, only administrators can add users to
+projects without a DAG assignment.
+<br><br>
+
 ### Administrator username
 Some functions of the wizard are performed through REDCap as an administrator. Specify the
 administrator username to be used for this here.
@@ -52,6 +58,7 @@ Enter values here to change the *Internal User* and *External User* headings fro
 Path to a file containing CA certificates to validate HTTPS requests. If this is not specified, the
 CA bundle file specified in the php.ini configuration file will be used. If a CA bundle file is not
 specified in php.ini, then the CA bundle included with REDCap will be used.
+<br><br>
 
 ### Project role names to allow users to be assigned to
 Define the role names that a user can be assigned to within a project when using the wizard. Only
@@ -67,6 +74,7 @@ specified project.
 ### Lookup notification email field name
 The field name in the lookup project for the field which contains an email address to send a
 notification whenever a user is added to the project.
+<br><br>
 
 ### Specific project settings
 
