@@ -62,6 +62,19 @@ $(function()
 	// Check if the current user is allowed to access the user management wizard.
 	public function isAccessAllowed()
 	{
+		$infoConfig =
+			$this->query( 'SELECT (SELECT `value` FROM redcap_config WHERE field_name = ?) 2fa, ' .
+			              '(SELECT `value` FROM redcap_config WHERE field_name = ?) ip, ' .
+			              '(SELECT `value` FROM redcap_config WHERE field_name = ?) addrs',
+			              [ 'two_factor_auth_enabled', 'two_factor_auth_ip_check_enabled',
+			                'two_factor_auth_ip_range' ] )->fetch_assoc();
+		if ( $infoConfig['2fa'] == '1' && ( $infoConfig['ip'] == '0' ||
+		     preg_match( '/(^|[^0-9a-f.:])(127\.0\.0\.1|::1|' .
+		                   preg_quote( $_SERVER['SERVER_ADDR'], '/' ) . ')([^0-9a-f.:]|$)/',
+		                   $infoConfig['addrs'] ) === 0 ) )
+		{
+			return false;
+		}
 		$listUsers = $this->getSystemSetting( 'wizard-users' );
 		if ( $listUsers == '' || ! defined( 'USERID' ) || USERID == '' )
 		{
@@ -88,7 +101,7 @@ $(function()
 		                                        '&email=' . rawurlencode( $email ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// Close user session.
 		$this->endUserSession( $sessionID );
 		// If wizard user not an admin, set their username as the new user's sponsor.
@@ -127,7 +140,7 @@ $(function()
 		                                        '&display_on_email_users=on' .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Ensure that the user does NOT receive emails about system notifications.
@@ -150,7 +163,7 @@ $(function()
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'action=add&username=' . rawurlencode( $username ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 	}
@@ -178,7 +191,7 @@ $(function()
 		                    '&notify_email_role=' . intval( $userNotify ) .
 		                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// Clear any existing DAG switcher assignments which may remain if the user was previously
 		// assigned to this project.
 		$this->query( 'DELETE FROM redcap_data_access_groups_users ' .
@@ -198,7 +211,7 @@ $(function()
 				                    '&group_id=' . intval( $dag ) .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 			$curl = curl_init( self::VERSION_PATH .
 			                   'index.php?route=DataAccessGroupsController:saveUserDAG&pid=' .
@@ -210,7 +223,7 @@ $(function()
 			                    '&dag=' . intval( $dag ) . '&enabled=true' .
 			                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 			curl_exec( $curl );
-			curl_close( $curl );
+			unset( $curl );
 			$first = false;
 		}
 		// End administrative session.
@@ -244,7 +257,7 @@ $(function()
 				                    '&dag=' . intval( $dag ) . '&enabled=' . $enableDAG .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 		}
 		// Check that the user is assigned to a DAG which is within their DAG switcher assignments
@@ -271,7 +284,7 @@ $(function()
 				                    '&group_id=' . intval( $selectedDAG ) .
 				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 				curl_exec( $curl );
-				curl_close( $curl );
+				unset( $curl );
 			}
 		}
 		// End administrative session.
@@ -304,7 +317,7 @@ $(function()
 		                                        '&group_id=' . rawurlencode( $currentDAG ) .
 		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the project log.
@@ -332,7 +345,7 @@ $(function()
 		curl_setopt( $curl, CURLOPT_POST, true );
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the project log.
@@ -376,10 +389,12 @@ $(function()
 		$canQualImp = $this->getSystemSetting( 'access-qual-imp' );
 		$purposeSQL = 'purpose = 2' . ( $canOpSup ? ' OR purpose = 4' : '' ) .
 		                              ( $canQualImp ? ' OR purpose = 3' : '' );
+		$canAnalysis = $this->getSystemSetting( 'access-analysis' );
+		$statusSQL = ( ( $canAnalysis || $isAdmin ) ? '' : ' AND status <> 2' );
 		// Get project IDs and titles for accessible projects.
 		$listProjects = [];
-		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects ' .
-		                              'WHERE completed_time IS NULL AND project_id ' .
+		$queryProject = $this->query( 'SELECT project_id, app_title FROM redcap_projects WHERE ' .
+		                              'completed_time IS NULL' . $statusSQL . ' AND project_id ' .
 		                              'NOT IN (SELECT project_id FROM redcap_projects_templates) ' .
 		                              ( $isAdmin ? '' : ( 'AND (' . $purposeSQL . ') AND ' .
 		                                'project_id IN ( SELECT project_id ' .
@@ -471,7 +486,7 @@ $(function()
 			                    'redcap_csrf_token=' . rawurlencode( $sessionID ) );
 		}
 		curl_exec( $curl );
-		curl_close( $curl );
+		unset( $curl );
 		// End administrative session.
 		$this->endUserSession( $sessionID );
 		// Write the action to the log.
@@ -533,8 +548,13 @@ $(function()
 		$infoUser = $this->query( 'SELECT 1 FROM redcap_user_rights ' .
 		                          'WHERE username = ? AND project_id = ?',
 		                          [ $username, $projectID ] )->fetch_assoc();
+		if ( $dateExpiry == '' )
+		{
+			$dateExpiry = null;
+		}
 		if ( $infoUser === null ||
-		     !preg_match( '/^2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|3[01])$/', $dateExpiry ) )
+		     ( $dateExpiry !== null &&
+		       !preg_match( '/^2[0-9]{3}-(0[1-9]|1[012])-([012][0-9]|3[01])$/', $dateExpiry ) ) )
 		{
 			return;
 		}
@@ -542,9 +562,18 @@ $(function()
 		              'WHERE username = ? AND project_id = ? LIMIT 1',
 		              [ $dateExpiry, $username, $projectID ] );
 		// Write the action to the project log.
-		\REDCap::logEvent( 'User Management Wizard',
-		                   "Access to project for user '$username' set to expire " .
-		                   "on $dateExpiry by '" . USERID . "'", null, null, null, $projectID );
+		if ( $dateExpiry === null )
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Expiry of access to project for user '$username' cleared " .
+			                   "by '" . USERID . "'", null, null, null, $projectID );
+		}
+		else
+		{
+			\REDCap::logEvent( 'User Management Wizard',
+			                   "Access to project for user '$username' set to expire " .
+			                   "on $dateExpiry by '" . USERID . "'", null, null, null, $projectID );
+		}
 	}
 
 
@@ -575,6 +604,26 @@ $(function()
 		$comments = $newProjectList . "\r\n" . $comments;
 		$this->query( 'UPDATE redcap_user_information SET user_comments = ? ' .
 		              'WHERE username = ? LIMIT 1', [ $comments, $username ] );
+	}
+
+
+
+	// Unsuspend a suspended user.
+	public function unsuspendUser( $username )
+	{
+		// Start administrative session.
+		$sessionID = $this->startUserSession();
+		// Submit unsuspend request.
+		$curl = curl_init( self::VERSION_PATH . 'ControlCenter/suspend_user.php' );
+		$this->configureCurl( $curl, $sessionID );
+		curl_setopt( $curl, CURLOPT_HTTPHEADER, ['X-Requested-With: XMLHttpRequest'] );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, 'suspend=0&username=' . rawurlencode( $username ) .
+		                                       '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
+		curl_exec( $curl );
+		unset( $curl );
+		// End administrative session.
+		$this->endUserSession( $sessionID );
 	}
 
 

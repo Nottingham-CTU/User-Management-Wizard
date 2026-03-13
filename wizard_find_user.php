@@ -85,6 +85,12 @@ if ( ! empty( $_POST ) )
 
 if ( ! $showSearch )
 {
+	$authMethod = $module->query( 'SELECT `value` FROM redcap_config WHERE field_name = ?',
+	                              ['auth_meth_global'] )->fetch_assoc()['value'];
+	$hasAllowlist = $module->query( 'SELECT `value` FROM redcap_config WHERE field_name = ?',
+	                              ['enable_user_allowlist'] )->fetch_assoc()['value'] == '1';
+	$showInternal = ( $hasAllowlist && ! in_array( $authMethod, [ 'none', 'table' ] ) );
+	$showExternal = ( $authMethod == 'table' || substr( $authMethod, -6 ) == '_table' );
 	$listUserProjects = $module->getAccessibleProjects( USERID );
 }
 
@@ -158,28 +164,58 @@ else
 ?>
 <h2><i class="fas fa-users"></i> User Management Wizard</h2>
 <p>&nbsp;</p>
-<h3>Enter User Details</h3>
-<p>&nbsp;</p>
-<p>Please choose the type of user:</p>
-<p>&nbsp;</p>
+<h3 style="margin-bottom:14px">Enter User Details</h3>
+<?php
+	if ( $showInternal && $showExternal )
+	{
+?>
+<p style="margin-bottom:12px">Please choose the type of user:</p>
+<?php
+	}
+	if ( $showInternal )
+	{
+?>
 <div id="sectionInternal">
-  <h4>Internal User</h4>
+<?php
+		if ( $showExternal )
+		{
+?>
+  <h4><?php echo $module->escapeHTML( $module->getSystemSetting('internal-user-heading') )
+                 ?: 'Internal User'; ?></h4>
+<?php
+		}
+?>
   <div class="sectionDetails">
     <form method="post">
       Username: <input type="text" name="username" required<?php
-	if ( $internalUserRegex != '' )
-	{
-		echo ' pattern="' . $internalUserRegex . '"';
-	}
+		if ( $internalUserRegex != '' )
+		{
+			echo ' pattern="' . $internalUserRegex . '"';
+		}
 ?>>
       <br>
       <input type="submit" value="Next">
     </form>
   </div>
 </div>
+<?php
+	}
+?>
 <p>&nbsp;</p>
+<?php
+	if ( $showExternal )
+	{
+?>
 <div id="sectionExternal">
-  <h4>External User</h4>
+<?php
+		if ( $showInternal )
+		{
+?>
+  <h4><?php echo $module->escapeHTML( $module->getSystemSetting('external-user-heading') )
+                 ?: 'External User'; ?></h4>
+<?php
+		}
+?>
   <div class="sectionDetails">
     <form method="post">
       <table>
@@ -201,10 +237,12 @@ else
     </form>
   </div>
 </div>
+<?php
+	}
+?>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h3>Show Project Users</h3>
-<p>&nbsp;</p>
+<h3 style="margin-bottom:14px">Show Project Users</h3>
 <form method="post">
  <p>
  Select project:
@@ -223,17 +261,25 @@ else
  </p>
 </form>
 <p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3 style="margin-bottom:14px">Show Login History</h3>
+<a href="<?php echo $module->getUrl('login_history.php'); ?>">Show login history</a>
+<p>&nbsp;</p>
 
 <script type="text/javascript">
 $(function()
 {
   var vUserSections = $('#sectionInternal, #sectionExternal')
-  vUserSections.find( 'div.sectionDetails' ).css( 'display', 'none' )
-  vUserSections.css( 'cursor', 'pointer' )
   vUserSections.css( 'padding', '10px' )
   vUserSections.css( 'border', 'solid 1px #000000' )
   vUserSections.css( 'border-radius', '10px' )
   vUserSections.css( 'background', '#f7f7f7' )
+<?php
+	if ( $showInternal && $showExternal )
+	{
+?>
+  vUserSections.find( 'div.sectionDetails' ).css( 'display', 'none' )
+  vUserSections.css( 'cursor', 'pointer' )
   $('#sectionInternal').on( 'click', function()
   {
     var vSection = $('#sectionInternal')
@@ -252,6 +298,9 @@ $(function()
     vSection.find( 'div.sectionDetails' ).css( 'display', '' )
     vOtherSection.find( 'div.sectionDetails' ).css( 'display', 'none' )
   })
+<?php
+	}
+?>
 })
 </script>
 <?php
