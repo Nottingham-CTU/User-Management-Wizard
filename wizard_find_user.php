@@ -193,8 +193,18 @@ else
 			echo ' pattern="' . $internalUserRegex . '"';
 		}
 ?>>
+<?php
+		if ( $module->getSystemSetting('ldap-search-enable') &&
+		     in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
+		{
+?>
+      <a href="#" onclick="event.preventDefault();$.get('<?php echo $module->getUrl('ldap_search.php');
+         ?>',function(d){simpleDialog(d,'Search',null,window.innerWidth*4/5)})">Search for user...</a>
+<?php
+		}
+?>
       <br>
-      <input type="submit" value="Next">
+      <button type="submit" class="btn btn-sm btn-primaryrc" style="margin-top:12px">Next</button>
     </form>
   </div>
 </div>
@@ -233,7 +243,7 @@ else
                pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`|{}~-]+)+@([A-Za-z0-9-]+(\.(?=.))?)+$"></td>
         </tr>
       </table>
-      <input type="submit" value="Next">
+      <button type="submit" class="btn btn-sm btn-primaryrc" style="margin-top:12px">Next</button>
     </form>
   </div>
 </div>
@@ -257,7 +267,8 @@ else
 	}
 ?>
   </select>
-  <input type="submit" value="Go">
+  <button type="submit" class="btn-primaryrc"
+          style="border-radius:var(--bs-border-radius-sm)">Go</button>
  </p>
 </form>
 <p>&nbsp;</p>
