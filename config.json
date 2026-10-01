@@ -103,6 +103,11 @@
 			"type" : "descriptive"
 		},
 		{
+			"key" : "ldap-verify-username",
+			"name" : "Verify that LDAP users exist before their accounts can be created in REDCap",
+			"type" : "checkbox"
+		},
+		{
 			"key" : "ldap-search-enable",
 			"name" : "Enable option to search the LDAP directory for a user (e.g. by name or email)",
 			"type" : "checkbox"

@@ -27,6 +27,31 @@ if ( ! empty( $_POST ) )
 		if ( $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 		                     'username = ?', [ $_POST['username'] ] )->num_rows == 0 )
 		{
+			// If using LDAP and the option to verify username is enabled, check the user exists
+			// in the LDAP directory before creating in REDCap.
+			if ( $module->getSystemSetting('ldap-verify-username') &&
+			     in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
+			{
+				require_once APP_PATH_DOCROOT . 'Libraries/PEAR/Auth/Container/LDAP.php';
+				$infoLdap = $GLOBALS['ldapdsn'];
+				if ( isset( $infoLdap[0] ) && is_array( $infoLdap[0] ) )
+				{
+					$infoLdap = $infoLdap[0];
+				}
+				$ldap = new Auth_Container_LDAP( $infoLdap );
+				$searchString = '(' . $infoLdap['userattr'] . '=' .
+				                $ldap->_quoteFilterString( $_POST['username'] ) . ')';
+				$ldap->_connect();
+				$ldapSearch = ldap_search( $ldap->conn_id, $infoLdap['basedn'], $searchString,
+				                           [$infoLdap['userattr']] );
+				if ( ! ldap_first_entry( $ldap->conn_id, $ldapSearch ) )
+				{
+					header( 'Location: ' . $module->getUrl( 'wizard_find_user.php?lunf=' .
+					                                        rawurlencode( $_POST['username'] ) ) );
+					exit;
+				}
+			}
+			// Redirect to create user page.
 			header( 'Location: ' . $module->getUrl( 'wizard_create_user.php?usertype=i&username=' .
 			                                        rawurlencode( $_POST['username'] ) ) );
 			exit;
@@ -164,6 +189,19 @@ else
 ?>
 <h2><i class="fas fa-users"></i> User Management Wizard</h2>
 <p>&nbsp;</p>
+<?php
+	if ( isset( $_GET['lunf'] ) ) // LDAP user not found
+	{
+?>
+<div class="yellow">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>Resources/images/exclamation_orange.png">
+ <?php echo $module->escapeHTML( $module->getSystemSetting('internal-user-heading') )
+            ?: 'Internal User', ' <em>', $module->escapeHTML( $_GET['lunf'] ); ?></em> not found.
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+?>
 <h3 style="margin-bottom:14px">Enter User Details</h3>
 <?php
 	if ( $showInternal && $showExternal )
