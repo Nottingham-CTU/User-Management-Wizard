@@ -89,6 +89,7 @@ if ( isset( $_POST['search'] ) )
 }
 
 
-echo '<div><input style="width:calc(100% - 140px)"> <input type="button" value="Search" ',
-     'onclick="var e=this;$.post(\'', $module->getUrl('ldap_search.php'),
-     '\',{\'search\':$(e).prev().val()},function(d){$(e).parent().html(d)})"></div>';
+echo '<div><input style="width:calc(100% - 140px);max-width:600px"> <input type="button" ',
+     'value="Search" onclick="showProgress(true);var e=this;$.post(\'',
+     $module->getUrl('ldap_search.php'), '\',{\'search\':$(e).prev().val()},',
+     'function(d){$(e).parent().html(d);showProgress(false)})"></div>';

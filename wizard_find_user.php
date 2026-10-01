@@ -198,8 +198,10 @@ else
 		     in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
 		{
 ?>
-      <a href="#" onclick="event.preventDefault();$.get('<?php echo $module->getUrl('ldap_search.php');
-         ?>',function(d){simpleDialog(d,'Search',null,window.innerWidth*4/5)})">Search for user...</a>
+      &nbsp;
+      <a href="#" onclick="event.preventDefault();wi=window.innerWidth;$.get('<?php
+			echo $module->getUrl('ldap_search.php');
+      ?>',function(d){simpleDialog(d,'Search',null,(wi>1000)?800:(wi*4/5))})">Search for user...</a>
 <?php
 		}
 ?>
