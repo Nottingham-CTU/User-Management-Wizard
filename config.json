@@ -119,6 +119,26 @@
 			"branchingLogic" : { "field" : "ldap-search-enable", "value" : true }
 		},
 		{
+			"key" : "ldap-auto-suspend",
+			"name" : "Automatically suspend users who are removed from the LDAP directory",
+			"type" : "radio",
+			"choices" : [
+				{
+					"value" : "",
+					"name" : "No"
+				},
+				{
+					"value" : "I",
+					"name" : "Yes - check users with internal username format"
+				},
+				{
+					"value" : "A",
+					"name" : "Yes - check users with non-table-based auth"
+				}
+			],
+			"branchingLogic" : { "field" : "admin-user", "op" : "<>", "value" : "" }
+		},
+		{
 			"key" : "header4",
 			"name" : "<b>Default Project Settings</b>",
 			"type" : "descriptive"
@@ -185,6 +205,15 @@
 					"branchingLogic" : { "field" : "project-id", "op" : "<>", "value" : "" }
 				}
 			]
+		}
+	],
+	"crons" : [
+		{
+			"cron_name" : "check_ldap",
+			"cron_description" : "User Management Wizard - LDAP user check",
+			"method" : "checkLDAPUsers",
+			"cron_frequency" : "441000",
+			"cron_max_run_time" : "86400"
 		}
 	]
 }
