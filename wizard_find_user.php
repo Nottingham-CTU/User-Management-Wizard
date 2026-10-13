@@ -162,6 +162,10 @@ if ( $showSearch )
 ?>
 </table>
 <p>&nbsp;</p>
+<?php
+	if ( SUPER_USER || $module->getSystemSetting('admin-user') != '' )
+	{
+?>
 <p>
  <b>Can't find the user you're looking for?</b>
  <a href="<?php echo $module->getUrl( 'wizard_create_user.php?usertype=e' .
@@ -171,6 +175,9 @@ if ( $showSearch )
 ?>">Create a new user account</a>
 </p>
 <p>&nbsp;</p>
+<?php
+	}
+?>
 <script type="text/javascript">
 $(function()
 {
