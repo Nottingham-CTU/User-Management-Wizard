@@ -40,7 +40,7 @@ if ( ! empty( $_POST ) )
 				}
 				$ldap = new Auth_Container_LDAP( $infoLdap );
 				$searchString = '(' . $infoLdap['userattr'] . '=' .
-				                $ldap->_quoteFilterString( $_POST['username'] ) . ')';
+				                ldap_escape( $_POST['username'], '', LDAP_ESCAPE_FILTER ) . ')';
 				$ldap->_connect();
 				$ldapSearch = ldap_search( $ldap->conn_id, $infoLdap['basedn'], $searchString,
 				                           [$infoLdap['userattr']] );

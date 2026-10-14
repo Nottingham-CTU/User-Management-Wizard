@@ -28,7 +28,7 @@ if ( isset( $_POST['search'] ) )
 	$searchAttrs = $module->getSystemSetting('ldap-search-attrs');
 	$searchAttrs = $searchAttrs == '' ? ['mail'] : explode(',', $searchAttrs);
 	array_walk( $searchAttrs, fn($v) => preg_replace( '/[^A-Za-z]/', '', $v ) );
-	$searchString = $ldap->_quoteFilterString( $_POST['search'] );
+	$searchString = ldap_escape( $_POST['search'], '', LDAP_ESCAPE_FILTER );
 	$searchString = '(|' .
 		array_reduce( $searchAttrs,
 		              fn($c, $i) => ( $c .

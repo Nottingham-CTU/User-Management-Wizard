@@ -366,7 +366,7 @@ $(function()
 		{
 			$ldap = new \Auth_Container_LDAP( $infoLdap );
 			$searchString = '(' . $infoLdap['userattr'] . '=' .
-			                $ldap->_quoteFilterString( $username ) . ')';
+			                ldap_escape( $username, '', LDAP_ESCAPE_FILTER ) . ')';
 			$ldap->_connect();
 			$ldapSearch = ldap_search( $ldap->conn_id, $infoLdap['basedn'], $searchString,
 			                           [$infoLdap['userattr']] );
