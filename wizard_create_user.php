@@ -19,7 +19,7 @@ if ( ! empty( $_POST ) )
 	if ( isset( $_POST['checkusername'] ) )
 	{
 		if ( ( $internalUserRegex != '' &&
-		       preg_match( "/$internalUserRegex/", $_POST['checkusername'] ) ) ||
+		       preg_match( "/$internalUserRegex/i", $_POST['checkusername'] ) ) ||
 		     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 		                     'username = ?', [ $_POST['checkusername'] ] )->num_rows > 0 )
 		{
@@ -53,8 +53,8 @@ if ( ! empty( $_POST ) )
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 	                     'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
 	     ( $internalUserRegex != '' &&
-	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ||
-	       ( $userType == 'e' && preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ) )
+	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ||
+	       ( $userType == 'e' && preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ) )
 	{
 		exit;
 	}
