@@ -19,7 +19,7 @@ if ( ! empty( $_POST ) )
 	if ( isset( $_POST['checkusername'] ) )
 	{
 		if ( ( $internalUserRegex != '' &&
-		       preg_match( "/$internalUserRegex/", $_POST['checkusername'] ) ) ||
+		       preg_match( "/$internalUserRegex/i", $_POST['checkusername'] ) ) ||
 		     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 		                     'username = ?', [ $_POST['checkusername'] ] )->num_rows > 0 )
 		{
@@ -53,8 +53,8 @@ if ( ! empty( $_POST ) )
 	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 	                     'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
 	     ( $internalUserRegex != '' &&
-	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ||
-	       ( $userType == 'e' && preg_match( "/$internalUserRegex/", $_POST['username'] ) ) ) )
+	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ||
+	       ( $userType == 'e' && preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ) )
 	{
 		exit;
 	}
@@ -231,6 +231,7 @@ if ( $userType == 'e' ) // external user
     var vLastname = $('[name="lastname"]').val()
     if ( vFirstname != '' && vLastname != '' && vUsernameField.val() == '' )
     {
+      showProgress(true)
       var vUsername = (vFirstname.substring(0,1)+vLastname).toLowerCase().replace(/[^a-z]/g,'')
       if ( vUsername.length > 18 )
       {
@@ -238,6 +239,72 @@ if ( $userType == 'e' ) // external user
       }
       vUsernameField.val( vUsername )
       vUsernameField.blur()
+      $.post( '', { checkusername : vUsername }, function( vResponse )
+      {
+        if ( vResponse == 'true' )
+        {
+          showProgress(false)
+        }
+        else
+        {
+          vUsername = (vFirstname.substring(0,2)+vLastname).toLowerCase().replace(/[^a-z]/g,'')
+          if ( vUsername.length > 18 )
+          {
+            vUsername = vUsername.substring(0,16)
+          }
+          vUsernameField.val( vUsername )
+          vUsernameField.blur()
+          $.post( '', { checkusername : vUsername }, function( vResponse )
+          {
+            if ( vResponse == 'true' )
+            {
+              showProgress(false)
+            }
+            else
+            {
+              vUsername = (vFirstname.substring(0,3)+vLastname).toLowerCase().replace(/[^a-z]/g,'')
+              if ( vUsername.length > 18 )
+              {
+                vUsername = vUsername.substring(0,16)
+              }
+              vUsernameField.val( vUsername )
+              vUsernameField.blur()
+              $.post( '', { checkusername : vUsername }, function( vResponse )
+              {
+                if ( vResponse == 'true' )
+                {
+                  showProgress(false)
+                }
+                else
+                {
+                  vUsername = (vFirstname+vLastname).toLowerCase().replace(/[^a-z]/g,'')
+                  if ( vUsername.length > 18 )
+                  {
+                    vUsername = vUsername.substring(0,16)
+                  }
+                  vUsernameField.val( vUsername )
+                  vUsernameField.blur()
+                  $.post( '', { checkusername : vUsername }, function( vResponse )
+                  {
+                    if ( vResponse != 'true' )
+                    {
+                      vUsername = (vFirstname.substring(0,1)+
+                                   vLastname).toLowerCase().replace(/[^a-z]/g,'')
+                      if ( vUsername.length > 18 )
+                      {
+                        vUsername = vUsername.substring(0,16)
+                      }
+                      vUsernameField.val( vUsername )
+                      vUsernameField.blur()
+                    }
+                    showProgress(false)
+                  })
+                }
+              })
+            }
+          })
+        }
+      })
     }
   })
   vEmailField.blur()

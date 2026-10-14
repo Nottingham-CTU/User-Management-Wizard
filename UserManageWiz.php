@@ -328,6 +328,71 @@ $(function()
 
 
 
+	// Checks the status of LDAP users and auto-suspends any which are invalid.
+	public function checkLDAPUsers( $infoCron )
+	{
+		$autoSuspendMode = $this->getSystemSetting('ldap-auto-suspend');
+		if ( $autoSuspendMode == '' || $this->getSystemSetting('admin-user') == '' ||
+		     ! in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
+		{
+			return;
+		}
+		if ( $autoSuspendMode == 'I' )
+		{
+			$queryUsers = $this->query( 'SELECT username FROM redcap_user_information ' .
+			                            'WHERE username RLIKE ? AND user_suspended_time IS NULL',
+			                            [ $this->getSystemSetting('internal-user-regex') ] );
+		}
+		else
+		{
+			$queryUsers = $this->query( 'SELECT username FROM redcap_user_information ' .
+			                            'WHERE username NOT IN (SELECT username FROM redcap_auth)' .
+			                            ' AND user_suspended_time IS NULL', [] );
+		}
+		$listUsers = [];
+		while ( $infoUser = $queryUsers->fetch_assoc() )
+		{
+			$listUsers[] = $infoUser['username'];
+		}
+
+		require_once APP_PATH_DOCROOT . 'Libraries/PEAR/Auth/Container/LDAP.php';
+		$infoLdap = $GLOBALS['ldapdsn'];
+		if ( isset( $infoLdap[0] ) && is_array( $infoLdap[0] ) )
+		{
+			$infoLdap = $infoLdap[0];
+		}
+
+		foreach ( $listUsers as $username )
+		{
+			$ldap = new \Auth_Container_LDAP( $infoLdap );
+			$searchString = '(' . $infoLdap['userattr'] . '=' .
+			                ldap_escape( $username, '', LDAP_ESCAPE_FILTER ) . ')';
+			$ldap->_connect();
+			$ldapSearch = ldap_search( $ldap->conn_id, $infoLdap['basedn'], $searchString,
+			                           [$infoLdap['userattr']] );
+			// If user not found, suspend them in REDCap.
+			if ( ! ldap_first_entry( $ldap->conn_id, $ldapSearch ) )
+			{
+				// Start administrative session.
+				$sessionID = $this->startUserSession();
+				// Submit suspend request.
+				$curl = curl_init( self::VERSION_PATH . 'ControlCenter/suspend_user.php' );
+				$this->configureCurl( $curl, $sessionID );
+				curl_setopt( $curl, CURLOPT_HTTPHEADER, ['X-Requested-With: XMLHttpRequest'] );
+				curl_setopt( $curl, CURLOPT_POST, true );
+				curl_setopt( $curl, CURLOPT_POSTFIELDS,
+				                    'suspend=1&username=' . rawurlencode( $username ) .
+				                    '&redcap_csrf_token=' . rawurlencode( $sessionID ) );
+				curl_exec( $curl );
+				unset( $curl );
+				// End administrative session.
+				$this->endUserSession( $sessionID );
+			}
+		}
+	}
+
+
+
 	// Create an API token for the specified user and project.
 	// This is intended only to allow the user to use the mobile app. The token will not be returned
 	// by this function as the user is not expected to use it directly.

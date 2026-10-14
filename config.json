@@ -99,6 +99,47 @@
 		},
 		{
 			"key" : "header3",
+			"name" : "<b>Wizard Configuration - LDAP</b>",
+			"type" : "descriptive"
+		},
+		{
+			"key" : "ldap-verify-username",
+			"name" : "Verify that LDAP users exist before their accounts can be created in REDCap",
+			"type" : "checkbox"
+		},
+		{
+			"key" : "ldap-search-enable",
+			"name" : "Enable option to search the LDAP directory for a user (e.g. by name or email)",
+			"type" : "checkbox"
+		},
+		{
+			"key" : "ldap-search-attrs",
+			"name" : "LDAP directory fields to search (separate multiple fields with commas, default: mail)",
+			"type" : "text",
+			"branchingLogic" : { "field" : "ldap-search-enable", "value" : true }
+		},
+		{
+			"key" : "ldap-auto-suspend",
+			"name" : "Automatically suspend users who are removed from the LDAP directory",
+			"type" : "radio",
+			"choices" : [
+				{
+					"value" : "",
+					"name" : "No"
+				},
+				{
+					"value" : "I",
+					"name" : "Yes - check users with internal username format"
+				},
+				{
+					"value" : "A",
+					"name" : "Yes - check users with non-table-based auth"
+				}
+			],
+			"branchingLogic" : { "field" : "admin-user", "op" : "<>", "value" : "" }
+		},
+		{
+			"key" : "header4",
 			"name" : "<b>Default Project Settings</b>",
 			"type" : "descriptive"
 		},
@@ -130,7 +171,7 @@
 			"branchingLogic" : { "field" : "default-lookup-project", "op" : "<>", "value" : "" }
 		},
 		{
-			"key" : "header4",
+			"key" : "header5",
 			"name" : "<b>Specific Project Settings</b>",
 			"type" : "descriptive"
 		},
@@ -164,6 +205,15 @@
 					"branchingLogic" : { "field" : "project-id", "op" : "<>", "value" : "" }
 				}
 			]
+		}
+	],
+	"crons" : [
+		{
+			"cron_name" : "check_ldap",
+			"cron_description" : "User Management Wizard - LDAP user check",
+			"method" : "checkLDAPUsers",
+			"cron_frequency" : "441000",
+			"cron_max_run_time" : "86400"
 		}
 	]
 }
