@@ -321,7 +321,8 @@ else
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h3 style="margin-bottom:14px">Show Login History</h3>
-<a href="<?php echo $module->getUrl('login_history.php'); ?>">Show login history</a>
+<a href="<?php echo $module->getUrl('login_history.php'); ?>"
+   class="btn btn-sm btn-primaryrc" style="color:#fff;text-decoration:none">Show login history</a>
 <p>&nbsp;</p>
 
 <script type="text/javascript">

@@ -141,7 +141,7 @@ echo $userType == 'i' ? ' readonly' : ''; // username pre-entered if internal us
         <tr>
           <td>Email address:&nbsp; </td>
           <td><input type="text" name="email" size="50" required
-               pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`|{}~-]+)+@([A-Za-z0-9-]+(\.(?=.))?)+$"<?php
+               pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`\|\{\}~\-]+)+@([A-Za-z0-9\-]+(\.(?=.))?)+$"<?php
 echo isset($_GET['email']) ? ( ' value="' . $module->escapeHTML( $_GET['email'] ) . '"' ) : '';
 ?>></td>
         </tr>
@@ -166,7 +166,7 @@ if ( SUPER_USER && $userType == 'e' /* external user */ )
 
 ?>
       </table>
-      <input type="submit" value="Next" style="margin-top:12px">
+      <button class="btn btn-sm btn-primaryrc" type="submit" style="margin-top:12px">Next</button>
     </form>
   </div>
 </div>

@@ -698,7 +698,8 @@ if ( count( $listAssignedProjects ) == 0 )
 foreach ( $listAssignedProjects as $infoProject )
 {
 ?>
-<div class="mod-umw-projfrm">
+<div class="mod-umw-projfrm" data-projectid="<?php echo intval( $infoProject['project_id'] ); ?>"
+     data-projectname="<?php echo $module->escapeHTML( $infoProject['app_title'] ); ?>">
  <div>
   <h5 style="margin-top:15px"><?php echo $module->escapeHTML( $infoProject['app_title'] ); ?></h5>
 <?php
@@ -735,7 +736,9 @@ foreach ( $listAssignedProjects as $infoProject )
 		                                                                ?? $defaultAllowedRoles ) &&
 		     count( $infoProject['roles'] ) > 1 )
 		{
-			echo '&nbsp;&nbsp;<a href="#" onclick="$(this).prev().css(\'display\',\'none\');',
+			echo '&nbsp;&nbsp;<a class="btnShowRoleOptions btn btn-xs btn-primaryrc" ',
+			     'style="color:#fff;text-decoration:none" href="#" ',
+			     'onclick="$(this).prev().css(\'display\',\'none\');',
 			     '$(this).css(\'display\',\'none\');$(this).next().css(\'display\',\'\');',
 			     'return false">Change</a>';
 			echo '<span style="display:none">';
@@ -747,7 +750,8 @@ foreach ( $listAssignedProjects as $infoProject )
 				     '>', $module->escapeHTML( $infoRole['role_name'] ), '</option>';
 			}
 			echo '</select> ';
-			echo '<input type="submit" value="Change Role" style="display:none">';
+			echo '<button type="submit" class="btnChgRole btn btn-xs btn-primaryrc" ',
+			     'style="display:none">Change Role</button>';
 			echo '<input type="hidden" name="project_id" value="',
 			     intval( $infoProject['project_id'] ), '">';
 			echo '<input type="hidden" name="action" value="update_role">';
@@ -778,7 +782,8 @@ foreach ( $listAssignedProjects as $infoProject )
 		{
 ?>
   &nbsp;
-  <a onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
+  <a class="btnShowDAGOptions btn btn-xs btn-primaryrc" style="color:#fff;text-decoration:none"
+     onclick="$(this).css('display','none');$(this).parent().next().css('display','none');
               $(this).parent().next().next().css('display','');return false"
      href="#">Edit DAGs</a>
 <?php
@@ -821,7 +826,7 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
   </table>
   <p style="margin-bottom:15px">
-   <input type="submit" value="Update DAG assignment">
+   <button type="submit" class="btnChgDAGs btn btn-xs btn-primaryrc">Update DAG assignment</button>
    <input type="hidden" name="action" value="update_dags">
    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
@@ -834,10 +839,9 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
  <form method="post">
   <p>
-   <b>Mobile app:</b>
-   <input type="submit" value="Grant access" class="btnGrantAPI" data-project="<?php
-		echo $module->escapeHTML( $infoProject['app_title'] );
-?>">
+   <b>Mobile app:</b>&nbsp;
+   <button type="submit" class="btnGrantAPI btn btn-xs btn-primaryrc" data-project="<?php
+		echo $module->escapeHTML( $infoProject['app_title'] ); ?>">Grant access</button>
    <input type="hidden" name="action" value="app_api_token">
    <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
   </p>
@@ -861,13 +865,17 @@ foreach ( $listAssignedProjects as $infoProject )
 ?>
    The user's access to this project does not expire.&nbsp;
    <a onclick="$(this).css('display','none');$(this).next().css('display','');return false"
-     href="#">Set expiration</a>
+     href="#" class="btnShowExpirationOptions btn btn-xs btn-primaryrc"
+     style="color:#fff;text-decoration:none">Set expiration</a>
    <span style="display:none">
     <br><br>
-    &nbsp;&nbsp; <input type="date" name="expiration" required>
-    <input type="submit" value="Set expiration date">
-    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
-                                   onclick="$(this).prev().prev().prop('required',false)">
+    &nbsp;&nbsp;&nbsp; <input type="date" name="expiration" required>
+    &nbsp;<button type="submit"
+                  class="btnSetExpiry btn btn-xs btn-primaryrc">Set expiration date</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="submit" name="revoke" value="1"
+                                          onclick="$(this).prev().prev().prop('required',false)"
+                                          class="btnRevokeNow btn btn-xs btn-primaryrc"
+                                          >Revoke access immediately</button>
     <input type="hidden" name="action" value="set_expire">
     <input type="hidden" name="project_id" value="<?php echo intval( $infoProject['project_id'] ); ?>">
    </span>
@@ -884,16 +892,21 @@ foreach ( $listAssignedProjects as $infoProject )
      href="#">Change expiration</a>
    <span style="display:none">
     <br><br>
-    &nbsp;&nbsp; <input type="date" name="expiration" required>
-    <input type="submit" value="Change expiration date">
-    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="clear" value="<?php echo $clExpText; ?>"
-                                   onclick="$(this).prev().prev().prop('required',false)">
+    &nbsp;&nbsp;&nbsp; <input type="date" name="expiration" required>
+    &nbsp;<button type="submit"
+                  class="btnChgExpiry btn btn-xs btn-primaryrc">Change expiration date</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="submit" name="clear" value="1"
+                                          onclick="$(this).prev().prev().prop('required',false)"
+                                          class="btnClearExp btn btn-xs btn-primaryrc"
+                                          ><?php echo $clExpText; ?></button>
 <?php
 		if ( $expireText == 'will expire' )
 		{
 ?>
-    &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="revoke" value="Revoke access immediately"
-                                   onclick="$(this).prev().prev().prev().prop('required',false)">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="submit" name="revoke" value="1"
+                                          onclick="$(this).prev().prev().prop('required',false)"
+                                          class="btnRevokeNow btn btn-xs btn-primaryrc"
+                                          >Revoke access immediately</button>
 <?php
 		}
 ?>
@@ -952,7 +965,7 @@ foreach ( $listUnassignedProjects as $infoProject )
   </tr>
  </table>
  <p>
-  <input type="submit" value="Assign to Project">
+  <button type="submit" id="btnAssignProj" class="btn btn-sm btn-primaryrc">Assign to Project</button>
   <input type="hidden" name="action" value="add_project">
  </p>
 </form>
