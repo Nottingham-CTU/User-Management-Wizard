@@ -352,7 +352,7 @@ if ( ! empty( $_POST ) )
 		}
 		if ( isset( $_POST['revoke'] ) )
 		{
-			$_POST['expiration'] = date( 'Y-m-d' );
+			$_POST['expiration'] = date( 'Y-m-d', time() - 86400 ); // Previous day.
 		}
 		if ( isset( $_POST['clear'] ) )
 		{
