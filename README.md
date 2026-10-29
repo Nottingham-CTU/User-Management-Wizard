@@ -32,6 +32,13 @@ placed into Analysis/Cleanup status.
 For projects with DAGs, select this option to allow standard users to assign users to access all
 DAGs (i.e. no DAG assignment). If this option is not selected, only administrators can add users to
 projects without a DAG assignment.
+
+### Login history visibility
+Adjust the visibility of the *login history* page. The default option is to have the page visible
+with the full history for all User Management Wizard users. If this is not desired it can be set to
+limit the view for non-administrators to only show the login history of users who share at least
+one project with the User Management Wizard user, or the login history can be hidden entirely for
+non-administrators.
 <br><br>
 
 ### Administrator username

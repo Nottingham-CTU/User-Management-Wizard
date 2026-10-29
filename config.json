@@ -63,6 +63,25 @@
 			"type" : "checkbox"
 		},
 		{
+			"key" : "login-history-visibility",
+			"name" : "Login history visibility",
+			"type" : "radio",
+			"choices" : [
+				{
+					"value" : "",
+					"name" : "Full history visible to all users"
+				},
+				{
+					"value" : "P",
+					"name" : "Standard users only see history related to their projects"
+				},
+				{
+					"value" : "A",
+					"name" : "Only administrators can see the login history"
+				}
+			]
+		},
+		{
 			"key" : "header2",
 			"name" : "<b>Wizard Configuration</b>",
 			"type" : "descriptive"

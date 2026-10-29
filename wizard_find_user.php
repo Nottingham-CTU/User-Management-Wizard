@@ -319,11 +319,18 @@ else
  </p>
 </form>
 <p>&nbsp;</p>
+<?php
+	if ( SUPER_USER == 1 || $module->getSystemSetting( 'login-history-visibility' ) != 'A' )
+	{
+?>
 <p>&nbsp;</p>
 <h3 style="margin-bottom:14px">Show Login History</h3>
 <a href="<?php echo $module->getUrl('login_history.php'); ?>"
    class="btn btn-sm btn-primaryrc" style="color:#fff;text-decoration:none">Show login history</a>
 <p>&nbsp;</p>
+<?php
+	}
+?>
 
 <script type="text/javascript">
 $(function()
