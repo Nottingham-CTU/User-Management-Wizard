@@ -397,7 +397,8 @@ if ( ! empty( $_POST ) )
 	// Ensure that the user project list (first line of the comments on the user record), is set to
 	// the projects which the user has been granted access to.
 	$module->setUserProjectList( $_GET['username'] );
-	header( 'Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	header( 'Location: ' . APP_PATH_WEBROOT_FULL .
+	        substr( $_SERVER['REQUEST_URI'], strlen( APP_PATH_WEBROOT_PARENT ) ) );
 	exit;
 }
 
