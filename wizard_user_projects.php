@@ -658,8 +658,9 @@ if ( $infoUser['table_based'] == 1 )
 	{
 ?>
    <form method="post">
-    <input type="submit" value="Reset user password"
-           onclick="return confirm('Are you sure you want to reset this user\'s password?')">
+    <button type="submit" class="btn btn-xs btn-primaryrc" id="btnResetPassword"
+            onclick="return confirm('Are you sure you want to reset this user\'s password?')"
+           >Reset user password</button>
     <input type="hidden" name="action" value="reset_password">
    </form>
 <?php
@@ -890,7 +891,8 @@ foreach ( $listAssignedProjects as $infoProject )
    Access <?php echo $expireText, ' on ',
                      date( 'd M Y', strtotime( $infoProject['expiration'] ) ); ?>.&nbsp;
    <a onclick="$(this).css('display','none');$(this).next().css('display','');return false"
-     href="#">Change expiration</a>
+     href="#" class="btnShowExpirationOptions btn btn-xs btn-primaryrc"
+     style="color:#fff;text-decoration:none">Change expiration</a>
    <span style="display:none">
     <br><br>
     &nbsp;&nbsp;&nbsp; <input type="date" name="expiration" required>
@@ -905,7 +907,7 @@ foreach ( $listAssignedProjects as $infoProject )
 		{
 ?>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="submit" name="revoke" value="1"
-                                          onclick="$(this).prev().prev().prop('required',false)"
+                                          onclick="$(this).prev().prev().prev().prop('required',false)"
                                           class="btnRevokeNow btn btn-xs btn-primaryrc"
                                           >Revoke access immediately</button>
 <?php
