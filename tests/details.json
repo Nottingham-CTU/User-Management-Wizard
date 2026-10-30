@@ -1,0 +1,27 @@
+[
+	{
+		"file" : "test_01-Add_internal_user.py",
+		"name" : "Add internal user",
+		"expected" : "An internal user can be added by specifying their username. The username and email address are checked against the regex format."
+	},
+	{
+		"file" : "test_02-Add_external_user.py",
+		"name" : "Add external user",
+		"expected" : "An external user can be added by specifying their name/email/username. The email address and username must not match the internal user formats."
+	},
+	{
+		"file" : "test_03-Add_user_to_projects.py",
+		"name" : "Add user to projects",
+		"expected" : "Add a user to projects. Verify that admins can add to any role but non-admins can only add to the specified roles. Confirm the project specific settings are applied where applicable."
+	},
+	{
+		"file" : "test_04-Change_roles_DAGs.py",
+		"name" : "Change roles/DAGs",
+		"expected" : "Change a user's role and DAG assignments. Ensure non-admins can only change to a specified role (or prohibit changing role if no other suitable role available)."
+	},
+	{
+		"file" : "test_05-Set_change_expiration.py",
+		"name" : "Set/change expiration",
+		"expected" : "Confirm that a user's project access expiration dates are updated accordingly when a date is set or immediate revokation of access is requested."
+	}
+]
