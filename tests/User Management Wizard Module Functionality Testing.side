@@ -1,0 +1,1758 @@
+{
+  "id": "06fb3cdc-c6b1-44f8-a079-145ffad4234d",
+  "version": "3.0",
+  "name": "User Management Wizard Module Functionality Testing",
+  "url": "http://www.google.com",
+  "urls": [
+    "http://www.google.com"
+  ],
+  "plugins": [],
+  "suites": [
+    {
+      "id": "04ecab2a-cc93-4138-8aaf-3d25d19efaf9",
+      "name": "New Suite",
+      "parallel": false,
+      "persistSession": false,
+      "tests": [
+        "74188612-fe44-460f-aa56-58054721a421"
+      ],
+      "timeout": 30000
+    }
+  ],
+  "tests": [
+    {
+      "id": "19a4eca3-2c00-4281-ba94-270e22cf0341",
+      "name": "fn switchuser",
+      "commands": [
+        {
+          "id": "3c778ce2-3126-40d4-a520-3782245d770a",
+          "command": "if",
+          "target": "$('#subheaderDiv2').length > 0",
+          "value": "",
+          "comment": "Arguments: username (user to log in as)"
+        },
+        {
+          "id": "a83048b5-a0b3-4af8-9676-102dda94d82d",
+          "command": "executeScript",
+          "target": "$('#subheaderDiv2 span').remove();return $('#subheaderDiv2').text()",
+          "value": "_projtitle",
+          "comment": ""
+        },
+        {
+          "id": "5851ff3f-dbfa-4bda-9acd-c18b94335749",
+          "command": "else",
+          "target": "",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "c223ff44-4791-4976-a996-10431534f05a",
+          "command": "executeScript",
+          "target": "return null",
+          "value": "_projtitle",
+          "comment": ""
+        },
+        {
+          "id": "fcf73bbb-d4aa-4707-8176-0a1fec6ef168",
+          "command": "end",
+          "target": "",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "e6732a03-102f-4329-9061-723b6b025f60",
+          "command": "executeScript",
+          "target": "return $('a[href*=\"index.php?action=myprojects\"]').attr('href')",
+          "value": "_myprojects",
+          "comment": ""
+        },
+        {
+          "id": "9c663abc-a2ea-451e-b46d-bf8f56a34c91",
+          "command": "executeScript",
+          "target": "return $('#username-reference').text()",
+          "value": "_oldusername",
+          "comment": ""
+        },
+        {
+          "id": "41fb41da-2208-4146-bb13-328a8ce8aa40",
+          "command": "runScript",
+          "target": "//SETDESC:Log out as ${_oldusername}",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "5c3903c9-92aa-4152-9de8-00802eea5123",
+          "command": "click",
+          "target": "css=a[href*=\"logout=1\"]",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "c0631516-213f-4695-9b4b-e7eb58e4a5c6",
+          "command": "waitForElementPresent",
+          "target": "id=username",
+          "value": 30000,
+          "comment": ""
+        },
+        {
+          "id": "aae12fb2-0bb6-4718-8f22-91464d770ea5",
+          "command": "runScript",
+          "target": "$('#username').remove();window.location = ${_myprojects}",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "28719c3e-de01-4ed2-8246-b7427f4c3dee",
+          "command": "waitForElementPresent",
+          "target": "id=username",
+          "value": 30000,
+          "comment": ""
+        },
+        {
+          "id": "64867c05-0f22-4a3f-9a0e-612a81712c01",
+          "command": "assertElementPresent",
+          "target": "id=username",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "eb2d10e2-87c8-4aae-a729-9218c451f5a0",
+          "command": "assertElementPresent",
+          "target": "id=password",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "ad2a3946-f174-4fd6-b5a1-b348d0954039",
+          "command": "runScript",
+          "target": "$('#username').val(${username});$('#password').val('abc123');$('#footer').remove()",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "271309f1-71a5-4a58-ba22-005b8698dd13",
+          "command": "pause",
+          "target": 200,
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "8fe8df06-00c4-4734-8edf-1a335ec0973e",
+          "command": "runScript",
+          "target": "//SETDESC:Log in as ${username}",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "39619b48-26cf-442c-8b7b-529b1bfd5cc1",
+          "command": "click",
+          "target": "id=login_btn",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "137160b0-c1bc-418f-bcb3-b2e41164f85a",
+          "command": "waitForElementPresent",
+          "target": "id=footer",
+          "value": 30000,
+          "comment": ""
+        },
+        {
+          "id": "91e1531b-f3af-49b9-bb2c-3f6ba614996b",
+          "command": "if",
+          "target": "${_projtitle} !== null",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "9e433ff3-85d1-4dd4-8dce-4d329d76421a",
+          "command": "click",
+          "target": "linkText=${_projtitle}",
+          "value": "",
+          "comment": ""
+        },
+        {
+          "id": "90c4057c-b951-446c-89f2-14937974957c",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "value": 30000,
+          "comment": ""
+        },
+        {
+          "id": "37d62abc-906b-47cf-bad3-16eba726d59e",
+          "command": "end",
+          "target": "",
+          "value": "",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": "74188612-fe44-460f-aa56-58054721a421",
+      "name": "init",
+      "commands": [
+        {
+          "id": "689473e5-7c31-45bc-87ef-2df1748112f3",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "click",
+          "target": "linkText=My Projects",
+          "value": "",
+          "id": "ecf7c495-dafc-495b-9979-792ba210028e"
+        },
+        {
+          "command": "assertElementNotPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'User Management Wizard Test')]",
+          "value": "",
+          "id": "387faee1-8c15-4cf9-981d-30d9a3c1fdd3"
+        },
+        {
+          "command": "executeScript",
+          "target": "return ['1','2']",
+          "value": "projects",
+          "id": "8879142b-8fe6-408b-a918-8100acfba834"
+        },
+        {
+          "command": "forEach",
+          "target": "projects",
+          "value": "project",
+          "id": "64f54b28-395d-4fce-8cbb-23e0e552130c"
+        },
+        {
+          "command": "click",
+          "target": "linkText=New Project",
+          "value": "",
+          "id": "9478aa25-4635-41cb-9dff-4aede1083ab1"
+        },
+        {
+          "command": "type",
+          "target": "id=app_title",
+          "value": "User Management Wizard Test ${project}",
+          "id": "2a1c8ccb-d254-44bd-9620-b68b03f96536"
+        },
+        {
+          "command": "select",
+          "target": "name=purpose",
+          "value": "value=2",
+          "id": "89666ad6-3da6-4b67-8cfc-77d27bb98aee"
+        },
+        {
+          "command": "check",
+          "target": "id=purpose_other[1]",
+          "value": "",
+          "id": "ea098241-f61e-4785-aa4a-d1272c8a496c"
+        },
+        {
+          "command": "click",
+          "target": "id=project_template_radio1",
+          "value": "",
+          "id": "91f77777-a979-4ae7-8826-c540f955f323"
+        },
+        {
+          "command": "click",
+          "target": "css=input[name=\"copyof\"][value=\"1\"]",
+          "value": "",
+          "id": "5ec336cc-a04e-4688-b7e0-f256b8fd67b2"
+        },
+        {
+          "command": "click",
+          "target": "css=.btn-primaryrc",
+          "value": "",
+          "id": "ab6a2fc5-f572-49a5-ae72-1476696c5ecf"
+        },
+        {
+          "command": "pause",
+          "target": "2000",
+          "value": "",
+          "id": "c563c160-743c-45da-968f-ffbcd14905c4"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"UserRights/index.php\"]",
+          "value": "",
+          "id": "7735f8f4-5488-4d06-b411-505d040a8fe5"
+        },
+        {
+          "command": "executeScript",
+          "target": "return ['Admin','Standard1','Standard2']",
+          "value": "roles",
+          "id": "45f35482-0118-4bdd-b93d-2eaa4eadecf3"
+        },
+        {
+          "command": "forEach",
+          "target": "roles",
+          "value": "role",
+          "id": "bc1e02a6-6ea1-456e-a374-3bea20340382"
+        },
+        {
+          "command": "type",
+          "target": "id=new_rolename",
+          "value": "${role}",
+          "id": "a3865fa6-f13e-4cdc-afd5-8d04f296f40a"
+        },
+        {
+          "command": "click",
+          "target": "id=createRoleBtn",
+          "value": "",
+          "id": "345ffcf2-98fc-4fc3-93ba-fa02d0d741ce"
+        },
+        {
+          "command": "click",
+          "target": "css=*[aria-describedby=\"editUserPopup\"] .ui-dialog-buttonset button[style*=\"bold\"]",
+          "value": "",
+          "id": "2f882dbb-c1cd-4d9f-833f-3ef3ca69c612"
+        },
+        {
+          "command": "waitForElementPresent",
+          "target": "xpath=//table[@id='table-user_rights_roles_table'][contains(.,'${role}')]",
+          "value": "30000",
+          "id": "254e214e-7de6-48a7-9d23-c3a72f32c117"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "9758111a-a854-401d-ad73-999ee73d9182"
+        },
+        {
+          "command": "end",
+          "target": "",
+          "value": "",
+          "id": "37267c93-850b-4c97-af2c-d01cbf0eaed9"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"route=DataAccessGroupsController:index\"]",
+          "value": "",
+          "id": "086ad864-5957-4d40-a02a-3c4d8de0c7bc"
+        },
+        {
+          "command": "executeScript",
+          "target": "return ['DAG1','DAG2']",
+          "value": "dags",
+          "id": "6aafa9a7-c99d-4607-89a3-10bd513995cb"
+        },
+        {
+          "command": "forEach",
+          "target": "dags",
+          "value": "dag",
+          "id": "2dbd6ed1-4de1-4a66-83a9-26cea9f89fc2"
+        },
+        {
+          "command": "type",
+          "target": "id=new_group",
+          "value": "${dag}",
+          "id": "5a4405fa-ec8a-4ea4-a943-b76fae176515"
+        },
+        {
+          "command": "click",
+          "target": "id=new_group_button",
+          "value": "",
+          "id": "21ccf217-109c-448d-b0a1-796c31ca8c36"
+        },
+        {
+          "command": "waitForElementPresent",
+          "target": "xpath=//table[@id='table-dags_table'][contains(.,'${dag}')]",
+          "value": "30000",
+          "id": "6be53c23-e97b-4e58-9968-9276778d06a4"
+        },
+        {
+          "command": "end",
+          "target": "",
+          "value": "",
+          "id": "17a3bf75-18ac-4aeb-a474-85b81bc0a634"
+        },
+        {
+          "command": "click",
+          "target": "linkText=My Projects",
+          "value": "",
+          "id": "c330bd38-47e8-420c-a81a-387ccc3c8d4d"
+        },
+        {
+          "command": "end",
+          "target": "",
+          "value": "",
+          "id": "c53e653f-5697-4f0c-a3a5-db0f1e3d3a70"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"ControlCenter/index.php\"]",
+          "value": "",
+          "id": "bebf4c78-a7b8-488c-b17a-0326552e6281"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"ControlCenter/security_settings.php\"]",
+          "value": "",
+          "id": "132b20f2-567b-4ac3-8d51-dbe785060bbb"
+        },
+        {
+          "command": "select",
+          "target": "name=auth_meth_global",
+          "value": "value=ldap_table",
+          "id": "cbeeba09-2eed-40a6-a5f1-6e5cf2e20609"
+        },
+        {
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "value": "",
+          "id": "ba9cebda-fc22-4992-b5a5-8a40f5696578"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"ControlCenter/user_allowlist.php\"]",
+          "value": "",
+          "id": "816c207a-cb59-4b4b-955a-a017351f9cb4"
+        },
+        {
+          "command": "select",
+          "target": "id=enable_user_allowlist",
+          "value": "value=1",
+          "id": "b0ed2d15-27e0-482d-b8e6-b24ee6c3261f"
+        },
+        {
+          "command": "click",
+          "target": "id=enableListBtn",
+          "value": "",
+          "id": "7bc1d8ef-4f10-400a-b26e-1e1e6e53c222"
+        },
+        {
+          "command": "click",
+          "target": "xpath=//*[@aria-describedby='allowlistEnableAsk']//button[contains(.,'2)')]",
+          "value": "",
+          "id": "23c46433-a7a3-40d7-8dc4-adadc88cdfc3"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/manager/control_center.php\"]",
+          "value": "",
+          "id": "0fa35ec7-611b-4e68-b380-396de6bd20ab"
+        },
+        {
+          "command": "click",
+          "target": "css=tr[data-module=\"user_management_wizard\"] .external-modules-configure-button",
+          "value": "",
+          "id": "94cefd3c-c21d-4c97-99c4-443aba67fe14"
+        },
+        {
+          "command": "waitForElementPresent",
+          "target": "name=wizard-users",
+          "value": "30000",
+          "id": "0a86e75a-dcad-4ff6-9414-a5bdf9352eb6"
+        },
+        {
+          "command": "sendKeys",
+          "target": "name=wizard-users",
+          "value": "admin${KEY_ENTER}user1",
+          "id": "e5a800ce-fd56-4d85-91a6-b3137f68b64d"
+        },
+        {
+          "command": "type",
+          "target": "name=admin-user",
+          "value": "admin",
+          "id": "dc0b28fd-39e9-4460-9bb2-5ade46840c55"
+        },
+        {
+          "command": "type",
+          "target": "name=internal-user-regex",
+          "value": "^internal.*",
+          "id": "7fd3e601-167c-42fa-a834-de6b1ba82149"
+        },
+        {
+          "command": "type",
+          "target": "name=internal-email-regex",
+          "value": "@internal\\.example\\.com$",
+          "id": "5f2156b8-a9e5-48ad-a415-0819feec6265"
+        },
+        {
+          "command": "type",
+          "target": "name=default-allowed-roles",
+          "value": "Standard1",
+          "id": "2c08f211-e47c-4505-ae1c-f233c97e8c4d"
+        },
+        {
+          "command": "click",
+          "target": "css=tr[field=\"project-id\"] .select2",
+          "value": "",
+          "id": "bb2378fb-2e82-4631-92e4-cabd336e13bb"
+        },
+        {
+          "command": "click",
+          "target": "xpath=//*[contains(@class,'select2')]//li[contains(.,'User Management Wizard Test 1')]",
+          "value": "",
+          "id": "eb7c495f-241d-4167-8927-9b1dabae5134"
+        },
+        {
+          "command": "sendKeys",
+          "target": "css=tr[field=\"project-allowed-roles\"] textarea",
+          "value": "Standard1${KEY_ENTER}Standard2",
+          "id": "499bed1c-8a69-4e5f-8423-885f72b360d5"
+        },
+        {
+          "command": "click",
+          "target": "css=#external-modules-configure-modal button.save",
+          "value": "",
+          "id": "1a762572-5bf3-4bf8-935b-db2ee32be9e8"
+        }
+      ]
+    },
+    {
+      "id": "b2a661ee-b956-406b-8954-76e666c3c1c5",
+      "name": "t01 - Add internal user",
+      "commands": [
+        {
+          "id": "1cef49cf-c970-4667-85d5-2792d17f1b4d",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "020b2c1c-e2f0-4f27-b974-12c80457727d"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "4954555e-343c-45e6-be2f-7236e9b3116e"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "10a042dd-b702-457a-adc6-9641b0a71f73"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "f76eba76-223c-491b-97fc-998e6fb669c8"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionInternal",
+          "value": "",
+          "id": "6ebe7ac4-81c5-4fd5-bd4c-bffa49424f40"
+        },
+        {
+          "command": "type",
+          "target": "name=username",
+          "value": "internal1",
+          "id": "5e9b876c-adfb-4811-a9b0-11f5c8ade485"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionInternal button",
+          "value": "",
+          "id": "ed77abc8-d9ad-4e9e-a1e5-3cc20affa520"
+        },
+        {
+          "command": "runScript",
+          "target": "$('input[name=\"username\"]').prop('readonly',false)",
+          "value": "",
+          "id": "81d2d723-ea38-41f5-a9c3-d163978b0c87"
+        },
+        {
+          "command": "type",
+          "target": "name=firstname",
+          "value": "Internal",
+          "id": "afb74323-980b-4f27-806b-8d84f90e85d7"
+        },
+        {
+          "command": "type",
+          "target": "name=lastname",
+          "value": "User",
+          "id": "05166b91-8b74-48d4-b410-b9dc0b4ad20e"
+        },
+        {
+          "command": "type",
+          "target": "name=email",
+          "value": "1@internal.example.com",
+          "id": "d54dfe4f-4159-473e-8e83-9a7911f5e7e8"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer button",
+          "value": "",
+          "id": "8e26b2a5-8939-44bf-ba9e-d3838f5db648"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert account created",
+          "value": "",
+          "id": "16a77964-12c4-4e9a-938e-47608b11670f"
+        },
+        {
+          "command": "type",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "SAVESCREENSHOT",
+          "id": "9fc7de05-1e47-4b00-820a-3d519461a762"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "221dd2dd-410a-47a8-8dfe-5661ffbe63bf"
+        }
+      ]
+    },
+    {
+      "id": "793662c0-7048-4e36-8d1a-8bc083e209f9",
+      "name": "t02 - Add external user",
+      "commands": [
+        {
+          "id": "6ab5979f-6173-4333-a926-0a1f00c487dd",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "9c0b4c69-9ba9-46a8-a467-558466a25ba6"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "921ff6b2-7f30-4040-9d76-8f83846b8a05"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "8e6158dd-45e5-439a-a41a-0ebaadb1e3e0"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "9c966a1c-9418-4b07-9632-31c98ef56ad7"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "86f6eed8-15c9-4fdd-9e31-68c195bfa2fe"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "External",
+          "id": "d27a6610-59b8-4b9f-b9d6-e64ea51315e9"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User",
+          "id": "ed71d5cc-1e29-40c9-ac60-1eaf38c8ac1d"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "1@external.example.com",
+          "id": "b7ded228-0e94-4ac8-a7ea-ef394a793720"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "11845a88-c361-43f2-b899-f47c7299f403"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user selection table displayed",
+          "value": "",
+          "id": "43407077-2a69-49db-b2ec-def94438c652"
+        },
+        {
+          "command": "type",
+          "target": "css=.mod-umw-table",
+          "value": "SAVESCREENSHOT",
+          "id": "692d4537-4c49-4c9d-b0ca-49d603df7379"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@class='mod-umw-table']//td[3][contains(.,'User')]",
+          "value": "",
+          "id": "fff9faf6-f7d6-4b56-8940-6a4e36e21a51"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"page=wizard_create_user\"]",
+          "value": "",
+          "id": "f09e752d-20f4-4e4f-adf1-69abde23fc46"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user details prefilled",
+          "value": "",
+          "id": "8ca519c9-8930-4194-b1c7-928a02054715"
+        },
+        {
+          "command": "type",
+          "target": "css=#formContainer table",
+          "value": "SAVESCREENSHOT",
+          "id": "8a8cdc6c-0872-4fc2-a19a-27ce250885de"
+        },
+        {
+          "command": "assertValue",
+          "target": "css=input[name=\"firstname\"]",
+          "value": "External",
+          "id": "3a8dd5d2-f476-42ad-936f-28042b17d8cd"
+        },
+        {
+          "command": "assertValue",
+          "target": "css=input[name=\"lastname\"]",
+          "value": "User",
+          "id": "932cccf8-97d6-444f-b9ee-822e68419555"
+        },
+        {
+          "command": "assertValue",
+          "target": "css=input[name=\"email\"]",
+          "value": "1@external.example.com",
+          "id": "436729c2-1576-4da2-b102-c2cd6d69fa76"
+        },
+        {
+          "command": "assertValue",
+          "target": "css=input[name=\"username\"]",
+          "value": "euser",
+          "id": "9f7cb252-5371-4f04-a289-12b7187cc7f4"
+        },
+        {
+          "command": "type",
+          "target": "css=input[name=\"email\"]",
+          "value": "1@internal.example.com",
+          "id": "cff8e48c-eb47-4fb8-8fcc-8ef86317c8ce"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Click outside of field",
+          "value": "",
+          "id": "211b282b-6ecb-49fd-9ef6-0b92dc731c73"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer",
+          "value": "",
+          "id": "a613a347-78d5-4c80-b69e-5fe99fd52bee"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "378a7940-764d-40ec-bbd4-44bb825c5080"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer button",
+          "value": "",
+          "id": "4594ec19-fd8b-4d3b-9b37-404b8279074f"
+        },
+        {
+          "command": "runScript",
+          "target": "//SAVEDESC:Assert internal email address not accepted",
+          "value": "",
+          "id": "d4f42dfe-1768-42c8-8856-585563b220c8"
+        },
+        {
+          "command": "assertElementNotPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "f9feb6be-66d6-4df2-8b14-104ee16e8b30"
+        },
+        {
+          "command": "type",
+          "target": "css=input[name=\"email\"]",
+          "value": "1@external.example.com",
+          "id": "bb73da24-53d8-4a7e-a37c-725df8a65dd0"
+        },
+        {
+          "command": "type",
+          "target": "css=input[name=\"username\"]",
+          "value": "internal1",
+          "id": "e341631e-774f-49cc-a2bf-7c3fd5b27fa1"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Click outside of field",
+          "value": "",
+          "id": "188f943b-a998-4cad-87fb-8f1a35045052"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer",
+          "value": "",
+          "id": "8797a0e5-97c2-4dfa-b7c0-dba48fa7a637"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "68cdb8cd-36f5-4cde-baa4-2510374870c4"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer button",
+          "value": "",
+          "id": "d99830a3-af31-4cbc-a409-1903c8c2f443"
+        },
+        {
+          "command": "runScript",
+          "target": "//SAVEDESC:Assert internal username not accepted",
+          "value": "",
+          "id": "cefac58d-2cd6-481b-88fa-2ade2625bd79"
+        },
+        {
+          "command": "assertElementNotPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "2009a34f-8230-4ef1-8a49-ac09529f9113"
+        },
+        {
+          "command": "type",
+          "target": "css=input[name=\"username\"]",
+          "value": "external1",
+          "id": "9a690758-5a07-482d-976e-a67627e2f0f4"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Click outside of field",
+          "value": "",
+          "id": "226d01ea-0a75-438d-8f18-f44b758021d3"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer",
+          "value": "",
+          "id": "4f822513-ee20-44a7-9aaf-f45032a984ff"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "8911e598-8566-44ba-a398-a68a855ad1c7"
+        },
+        {
+          "command": "click",
+          "target": "css=#formContainer button",
+          "value": "",
+          "id": "72b04838-68a3-45c7-8eca-35be749803eb"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert account created",
+          "value": "",
+          "id": "b813bd18-2ec5-4ec8-aeca-371675e7e2f9"
+        },
+        {
+          "command": "type",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "SAVESCREENSHOT",
+          "id": "fb723c57-9bea-41f2-9a8d-b266aa278a1b"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "87decc2b-8a23-4223-83e3-d365f6fa69dc"
+        }
+      ]
+    },
+    {
+      "id": "150890f8-cf22-4f31-8352-e2099147fa92",
+      "name": "t03 - Add user to projects",
+      "commands": [
+        {
+          "id": "0a4f7b72-f506-49a5-a012-8bd76a52d4ec",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "7af22e90-570a-4055-8715-828eab26ac42"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "a8673993-79a3-4b39-85d5-afe49ba66502"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "6e078209-2f4a-480d-aad2-8819643887a2"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "eaf63ed3-fcdf-4547-9435-0017db2bc1d0"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "c332a047-5932-4071-99d5-70a47d8401a0"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "REDCap",
+          "id": "046e2ae0-2ef0-4c1c-b227-8edd25c2a4ba"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User2",
+          "id": "b4e7727d-ce0b-40e0-b03b-187c9b2c956a"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "user2@example.com",
+          "id": "da4bcee0-3480-4064-b535-63fdd9aeb377"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "f8c42e62-5d22-4d86-aadb-07c36c746a99"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "a225f935-3a28-4607-8c12-3a361e1596f3"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert no projects in project drop down",
+          "value": "",
+          "id": "1d7d9769-8e38-42dc-91c8-1d5f9ef70521"
+        },
+        {
+          "command": "type",
+          "target": "id=assign_project_id",
+          "value": "SAVESCREENSHOT",
+          "id": "7c756e88-1165-4bdf-b8f5-e0409bd9a646"
+        },
+        {
+          "command": "executeScript",
+          "target": "return '' + $('#assign_project_id option').length",
+          "value": "numProjs",
+          "id": "29513574-21dd-4f38-af20-71496e5b5e4b"
+        },
+        {
+          "command": "assert",
+          "target": "numProjs",
+          "value": "1",
+          "id": "15168206-81e7-4bd7-b14b-367a00e6914b"
+        },
+        {
+          "command": "store",
+          "target": "admin",
+          "value": "username",
+          "id": "d8540875-0212-4b44-b5ec-2b4c068bee44"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "93335fee-bc25-4146-819a-545b6ae8543e"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "3de496ce-a85a-498f-9c93-3638d1144038"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "d56fc695-52e1-4c47-b480-2a43d3404cec"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "2bc8af51-40d8-45e1-9158-4e00207cd3b7"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "REDCap",
+          "id": "8c94687e-c72e-4875-b42a-1e15e3cc4477"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User1",
+          "id": "a8531d10-f1dd-4997-955a-806d1e7a1607"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "user1@example.com",
+          "id": "b836e03b-733b-450e-be86-36fbccc32d42"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "cadb04c5-e06c-407e-809c-373618677bc4"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "bbd303f8-7c59-4ed0-a6cb-5b402fefbfcf"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_project_id",
+          "value": "label=User Management Wizard Test 1",
+          "id": "e87d9668-b09b-4eae-b7c8-53100b60b7b0"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_role_id",
+          "value": "label=Admin",
+          "id": "73d2a4b2-a0c5-4da6-9d2c-17dd4332a6e9"
+        },
+        {
+          "command": "check",
+          "target": "name=dag[*]",
+          "value": "",
+          "id": "e855788a-50c8-4898-b097-4792be6e0250"
+        },
+        {
+          "command": "click",
+          "target": "id=btnAssignProj",
+          "value": "",
+          "id": "c570be92-078b-46bd-9f83-473c48f953fb"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user added to project",
+          "value": "",
+          "id": "1840fc56-b916-4575-9a86-c9a3185e7770"
+        },
+        {
+          "command": "type",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "0911fbb1-64f5-4d60-a518-eb84c33d382f"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "",
+          "id": "c6d2f4c0-d2a5-4230-acea-105190113cd9"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_project_id",
+          "value": "label=User Management Wizard Test 2",
+          "id": "447bb756-9470-4f47-9671-35316c0f234e"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_role_id",
+          "value": "label=Admin",
+          "id": "7b84218c-36ff-4bc7-af24-7635440f43ac"
+        },
+        {
+          "command": "check",
+          "target": "name=dag[*]",
+          "value": "",
+          "id": "dd71f9b5-ea8c-44a2-bee3-57a935842b42"
+        },
+        {
+          "command": "click",
+          "target": "id=btnAssignProj",
+          "value": "",
+          "id": "22ba8147-03b6-4dea-982c-98e0966464cd"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user added to project",
+          "value": "",
+          "id": "3c193de4-2b4b-4050-aaa2-619581de69c8"
+        },
+        {
+          "command": "type",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 2\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "8914ed9e-ceee-4c2c-b57f-0bca2b4e49d8"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 2\"]",
+          "value": "",
+          "id": "c684a0fb-0221-4c39-b55e-7d0e30d2f727"
+        },
+        {
+          "command": "click",
+          "target": "linkText=My Projects",
+          "value": "",
+          "id": "0d2d1ccb-7c48-45a8-a104-2677cdba350b"
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "272f3730-117d-4482-96ec-6d3405904452"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "03d6dc93-b794-46c0-8162-ab727a08983f"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "eb2f68a2-0692-4b1e-b336-271dcce0202e"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "ea22c2fd-a12a-495b-ad25-dd59da40f175"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "3302e639-167b-415c-9de9-7d085dc43273"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "REDCap",
+          "id": "cba98da7-4c20-4333-8248-40864c315161"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User2",
+          "id": "a3c488e8-99bb-44a3-aef9-b9b729776a5a"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "user2@example.com",
+          "id": "40ec4726-6723-4add-a45f-9359a7b71438"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "587aa138-3507-46b9-9dcb-bf8fd0ee9e59"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "a29413fa-1d25-405b-b004-75c834857f3f"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert 2 projects in project drop down",
+          "value": "",
+          "id": "b1ee60cb-706d-42ee-a03a-b3126e4d7174"
+        },
+        {
+          "command": "type",
+          "target": "id=assign_project_id",
+          "value": "SAVESCREENSHOT",
+          "id": "418656e3-6b35-428c-9ed9-fcf00bcca533"
+        },
+        {
+          "command": "executeScript",
+          "target": "return '' + $('#assign_project_id option').length",
+          "value": "numProjs",
+          "id": "a7cfd697-0a83-4646-b914-f5bfd4bcae08"
+        },
+        {
+          "command": "assert",
+          "target": "numProjs",
+          "value": "3",
+          "id": "4ec08704-783c-43b9-97d0-d298d78aa1a1"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_project_id",
+          "value": "label=User Management Wizard Test 1",
+          "id": "69047638-7626-4ea5-924a-06f7d4f9f105"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "b652a3c9-40cc-49ca-b07c-af055b789832"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert 2 roles in role drop down",
+          "value": "",
+          "id": "d1a80668-d9ca-425c-939e-66c975559014"
+        },
+        {
+          "command": "type",
+          "target": "id=assign_role_id",
+          "value": "SAVESCREENSHOT",
+          "id": "c9fdc48d-3b49-4893-bd3e-a43a3033c919"
+        },
+        {
+          "command": "executeScript",
+          "target": "return '' + $('#assign_role_id option').length",
+          "value": "numRoles",
+          "id": "be7c726d-b680-40da-8acc-907f2089c43e"
+        },
+        {
+          "command": "assert",
+          "target": "numRoles",
+          "value": "3",
+          "id": "a7d1c9d8-8ca1-4357-a194-324e3093a884"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_role_id",
+          "value": "label=Standard1",
+          "id": "be54fa5f-bfe1-401f-b39b-7e2e51eb9ba8"
+        },
+        {
+          "command": "check",
+          "target": "xpath=(//*[@id='assign_dags']//input[contains(@name,'dag[')])[1]",
+          "value": "",
+          "id": "953d2344-4a19-4528-853d-d26acc7a2594"
+        },
+        {
+          "command": "click",
+          "target": "id=btnAssignProj",
+          "value": "",
+          "id": "f1026a44-75ef-4601-bd09-662e18579d68"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user added to project",
+          "value": "",
+          "id": "89889ef8-5ccd-474b-8f19-eeee44792310"
+        },
+        {
+          "command": "type",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "33c7ac82-e09c-4636-895e-8e2212b18ddb"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "",
+          "id": "c9560c66-a3ce-49bb-a7e7-7ebca72f8baf"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_project_id",
+          "value": "label=User Management Wizard Test 2",
+          "id": "aa19b922-3f4c-4190-9f4e-260bc704a9ab"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "93dc6f67-651f-41f2-91cd-c906a5c07a81"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert 1 role in role drop down",
+          "value": "",
+          "id": "a7489bcc-1935-433c-9aff-f4c5e2157a77"
+        },
+        {
+          "command": "type",
+          "target": "id=assign_role_id",
+          "value": "SAVESCREENSHOT",
+          "id": "360529c3-1a39-40db-a3da-009c073b7bc8"
+        },
+        {
+          "command": "executeScript",
+          "target": "return '' + $('#assign_role_id option').length",
+          "value": "numRoles",
+          "id": "6c6d09e7-1398-4d9b-bf37-a3617ae27907"
+        },
+        {
+          "command": "assert",
+          "target": "numRoles",
+          "value": "2",
+          "id": "466a7e55-9f39-46dd-8e76-8260a221e0fd"
+        },
+        {
+          "command": "select",
+          "target": "id=assign_role_id",
+          "value": "label=Standard1",
+          "id": "d1e27ca0-f464-4a26-b611-779065bdebe8"
+        },
+        {
+          "command": "check",
+          "target": "xpath=(//*[@id='assign_dags']//input[contains(@name,'dag[')])[1]",
+          "value": "",
+          "id": "033301a8-f084-433b-aa1d-19d76f324ff2"
+        },
+        {
+          "command": "click",
+          "target": "id=btnAssignProj",
+          "value": "",
+          "id": "3d5a7ca5-e7b2-4265-b6ac-ee962af316ca"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert user added to project",
+          "value": "",
+          "id": "0de0fb3b-321f-4ae8-9051-879fa10b07c5"
+        },
+        {
+          "command": "type",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 2\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "ab715594-f298-4e11-936b-5fa491672533"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "css=div[data-projectname=\"User Management Wizard Test 2\"]",
+          "value": "",
+          "id": "2f496bd8-5d06-4abc-9153-a6a12d04504d"
+        }
+      ]
+    },
+    {
+      "id": "794a20b6-1375-41fa-9359-fecc9e0bfdef",
+      "name": "t04 - Change roles/DAGs",
+      "commands": [
+        {
+          "id": "b0d5fe6b-b982-4af2-8adc-9149c50a2f30",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "b974085f-7467-4085-9879-30a09900c262"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "fb5efa29-e228-4a9b-be6b-bb8bbb3676b9"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "dc6881ad-cc3a-4463-9c76-5a5df43690d7"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "892625f0-bb86-4f6e-a7d9-664994d8af89"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "876d3388-b76f-4d32-b437-810d47201d45"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "REDCap",
+          "id": "adce0b9f-9428-4508-aa03-e1067b702805"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User2",
+          "id": "08364576-585f-4354-b4e3-a24abfc8ec4d"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "user2@example.com",
+          "id": "e59bcdfc-ad51-4961-a92c-4dfdd8c5dc8c"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "1e50cebd-9b91-4826-89bf-dc8f22177cd2"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "b7c3a93a-33a0-46f7-a4e3-0d1c836ba43c"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert change role option exists for 'Test 1' project",
+          "value": "",
+          "id": "e3705a1c-4ccf-4a83-bf83-76e060fa6873"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "32166a51-8756-4421-9e3e-db9e6824e1b3"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowRoleOptions",
+          "value": "",
+          "id": "17106042-9fc3-4ffe-9b3a-858639e428b0"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert change role option does not exist for 'Test 2' project",
+          "value": "",
+          "id": "adbed04c-6499-4b60-b176-e6b92246ab8f"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 2\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "158654fa-112e-445b-b2de-fd3d10970150"
+        },
+        {
+          "command": "assertElementNotPresent",
+          "target": "css=[data-projectname=\"User Management Wizard Test 2\"] .btnShowRoleOptions",
+          "value": "",
+          "id": "9edfbe14-003f-4f4f-add9-c2ef5dae64a3"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowRoleOptions",
+          "value": "",
+          "id": "c820f6b8-7d26-4c9b-a27b-d4d3cdb87d5a"
+        },
+        {
+          "command": "pause",
+          "target": "500",
+          "value": "",
+          "id": "7c9a5988-2b5a-49e6-9c14-b4d6ba2c0389"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert 2 roles in role drop down",
+          "value": "",
+          "id": "190a64ce-f2eb-48b5-8be4-699a1dd90240"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] [name=\"role_id\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "ba8152a1-2c67-4d5c-952c-2f81b9058a83"
+        },
+        {
+          "command": "executeScript",
+          "target": "return '' + $('[data-projectname=\"User Management Wizard Test 1\"] [name=\"role_id\"] option').length",
+          "value": "numRoles",
+          "id": "4188ab81-0dbe-4bd2-9541-b8884a921f6d"
+        },
+        {
+          "command": "assert",
+          "target": "numRoles",
+          "value": "2",
+          "id": "38ecca6b-5f60-47f2-8fd4-58b2bc60c2bc"
+        },
+        {
+          "command": "select",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] [name=\"role_id\"]",
+          "value": "label=Standard2",
+          "id": "b9b3dd7a-2982-4521-a38a-65e0b7152d9f"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnChgRole",
+          "value": "",
+          "id": "bd0f46b9-3bb9-4f12-835f-257e95482b67"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert role changed to 'Standard2'",
+          "value": "",
+          "id": "c8a56eb5-8fe1-4001-acf2-6c21cefc3b97"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "9447d3ea-cfaf-498a-b965-8ef9109656ed"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1']//span[contains(text(),'Standard2')]",
+          "value": "",
+          "id": "7d7862d8-5a8e-4f94-a9a7-7a668b09c985"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowDAGOptions",
+          "value": "",
+          "id": "ec201116-4670-4dd9-98e1-4379f31b0e00"
+        },
+        {
+          "command": "check",
+          "target": "xpath=(//*[@data-projectname='User Management Wizard Test 1']//input[contains(@name,'dag[')])[2]",
+          "value": "",
+          "id": "40d3df55-1e20-43a9-9b97-b1d73154297a"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnChgDAGs",
+          "value": "",
+          "id": "4941b55d-8a5a-4716-ab17-a037971c5d03"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert DAG2 added for 'Test 1' project",
+          "value": "",
+          "id": "52ef53ea-caba-4f67-b91b-516a736eb048"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "cf55e00b-ec2e-4cdc-90ff-e0b25dd559f1"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1']//li[contains(.,'DAG1')]",
+          "value": "",
+          "id": "484793be-d217-4e97-aa61-26584afc1a0e"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1']//li[contains(.,'DAG2')]",
+          "value": "",
+          "id": "a33e3883-2dd3-4aa3-90a1-cb6d01bd0720"
+        }
+      ]
+    },
+    {
+      "id": "86af4b99-086d-499e-8ba1-8a7af243f3f6",
+      "name": "t05 - Set/change expiration",
+      "commands": [
+        {
+          "id": "20cbef85-7874-4df8-a62c-ca3fbdf8a5e3",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "command": "store",
+          "target": "user1",
+          "value": "username",
+          "id": "09384f63-ac6b-4af9-b729-6c43ad508cd7"
+        },
+        {
+          "command": "run",
+          "target": "fn switchuser",
+          "value": "",
+          "id": "3de41d09-02e1-4d0a-ac29-f353631c6cd5"
+        },
+        {
+          "command": "pause",
+          "target": "1000",
+          "value": "",
+          "id": "0a4b041c-4ecf-4822-a4d5-ed73750d3bb8"
+        },
+        {
+          "command": "click",
+          "target": "css=a[href*=\"prefix=user_management_wizard\"]",
+          "value": "",
+          "id": "1f4bdd60-235d-4583-bdda-ff42ab28b6c2"
+        },
+        {
+          "command": "click",
+          "target": "id=sectionExternal",
+          "value": "",
+          "id": "894d15df-072e-453b-8497-be8989699b95"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"firstname\"]",
+          "value": "REDCap",
+          "id": "e30afbbb-5061-47de-858e-b98b54de8669"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"lastname\"]",
+          "value": "User2",
+          "id": "38444fd3-2db2-4307-bcbb-8b6c102b6aad"
+        },
+        {
+          "command": "type",
+          "target": "css=#sectionExternal [name=\"email\"]",
+          "value": "user2@example.com",
+          "id": "186b4fa1-3ed9-4497-86f2-01d835224a07"
+        },
+        {
+          "command": "click",
+          "target": "css=#sectionExternal button",
+          "value": "",
+          "id": "ad20622e-675c-43ad-b489-01c74a00bc11"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//h3[contains(.,'User Project Assignment')]",
+          "value": "",
+          "id": "c3f7a120-50a2-49ca-ac31-be548f7f4878"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowExpirationOptions",
+          "value": "",
+          "id": "95964e59-2838-446b-b8de-53806e483536"
+        },
+        {
+          "command": "runScript",
+          "target": "$('[data-projectname=\"User Management Wizard Test 1\"] [name=\"expiration\"]').val(new Date(Date.now()+864000000).toISOString().slice(0,10))",
+          "value": "",
+          "id": "11696eba-45a5-43c2-830d-7f49b4f013e3"
+        },
+        {
+          "command": "executeScript",
+          "target": "var d=new Date($('[data-projectname=\"User Management Wizard Test 1\"] [name=\"expiration\"]').val()).toDateString();return d.slice(8,11) + d.slice(4,8) + d.slice(11,15)",
+          "value": "expDate",
+          "id": "21dc4e18-3ca6-49ff-8666-8e8ac501e0e3"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Enter date",
+          "value": "",
+          "id": "ed04da47-13cd-4ed3-80ae-ab768fef3e6f"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] [name=\"expiration\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "8ded00c5-ef4d-41de-bd06-ec88c2add8f0"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnSetExpiry",
+          "value": "",
+          "id": "2c2ec40a-af54-43b1-93aa-fbfa59e42c58"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert expiry date set",
+          "value": "",
+          "id": "e203584a-6b7b-424e-8b39-b6940b453191"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "5f222c2b-84bb-4894-94bd-ad9dbf7355f8"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1'][contains(.,'Access will expire on ${expDate}.')]",
+          "value": "",
+          "id": "c3a9a8dc-5707-4f20-8882-4b0cd03afd6a"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowExpirationOptions",
+          "value": "",
+          "id": "c97c1331-2a03-4e85-8112-7a066e21340c"
+        },
+        {
+          "command": "executeScript",
+          "target": "var d=new Date(Date.now()-86400000).toDateString();return d.slice(8,11) + d.slice(4,8) + d.slice(11,15)",
+          "value": "expDate",
+          "id": "9f518eb3-28b6-4dfb-904b-384c005e0cf4"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnRevokeNow",
+          "value": "",
+          "id": "ebd7d391-b059-47ac-8c8a-023d3ef1cc4f"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert expiry set to date in past",
+          "value": "",
+          "id": "d4af4269-2a47-4ac1-992f-a735f768a0ea"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "82b38db9-6a0b-4bf2-addd-399993353421"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1'][contains(.,'Access expired on ${expDate}.')]",
+          "value": "",
+          "id": "a70255bb-7ae6-4266-9476-57c55df3cc5a"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnShowExpirationOptions",
+          "value": "",
+          "id": "b62361e3-694f-48c6-9893-53b0be10eadf"
+        },
+        {
+          "command": "click",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"] .btnClearExp",
+          "value": "",
+          "id": "458b4965-3e92-4ab1-bd7f-e27712f28a7f"
+        },
+        {
+          "command": "runScript",
+          "target": "//SETDESC:Assert expiry cleared",
+          "value": "",
+          "id": "52e37be2-0bb1-419a-9839-2bf7c99a22f6"
+        },
+        {
+          "command": "type",
+          "target": "css=[data-projectname=\"User Management Wizard Test 1\"]",
+          "value": "SAVESCREENSHOT",
+          "id": "ca60a80e-2050-409f-ba22-810f619f0588"
+        },
+        {
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@data-projectname='User Management Wizard Test 1'][contains(.,'access to this project does not expire')]",
+          "value": "",
+          "id": "bfce7cc7-a3da-48d9-b650-d7ac13114dbd"
+        }
+      ]
+    }
+  ],
+  "snapshot": {
+    "dependencies": {},
+    "tests": [],
+    "jest": {
+      "extraGlobals": []
+    }
+  }
+}

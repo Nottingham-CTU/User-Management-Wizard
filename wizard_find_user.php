@@ -27,6 +27,31 @@ if ( ! empty( $_POST ) )
 		if ( $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
 		                     'username = ?', [ $_POST['username'] ] )->num_rows == 0 )
 		{
+			// If using LDAP and the option to verify username is enabled, check the user exists
+			// in the LDAP directory before creating in REDCap.
+			if ( $module->getSystemSetting('ldap-verify-username') &&
+			     in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
+			{
+				require_once APP_PATH_DOCROOT . 'Libraries/PEAR/Auth/Container/LDAP.php';
+				$infoLdap = $GLOBALS['ldapdsn'];
+				if ( isset( $infoLdap[0] ) && is_array( $infoLdap[0] ) )
+				{
+					$infoLdap = $infoLdap[0];
+				}
+				$ldap = new Auth_Container_LDAP( $infoLdap );
+				$searchString = '(' . $infoLdap['userattr'] . '=' .
+				                ldap_escape( $_POST['username'], '', LDAP_ESCAPE_FILTER ) . ')';
+				$ldap->_connect();
+				$ldapSearch = ldap_search( $ldap->conn_id, $infoLdap['basedn'], $searchString,
+				                           [$infoLdap['userattr']] );
+				if ( ! ldap_first_entry( $ldap->conn_id, $ldapSearch ) )
+				{
+					header( 'Location: ' . $module->getUrl( 'wizard_find_user.php?lunf=' .
+					                                        rawurlencode( $_POST['username'] ) ) );
+					exit;
+				}
+			}
+			// Redirect to create user page.
 			header( 'Location: ' . $module->getUrl( 'wizard_create_user.php?usertype=i&username=' .
 			                                        rawurlencode( $_POST['username'] ) ) );
 			exit;
@@ -137,6 +162,10 @@ if ( $showSearch )
 ?>
 </table>
 <p>&nbsp;</p>
+<?php
+	if ( SUPER_USER || $module->getSystemSetting('admin-user') != '' )
+	{
+?>
 <p>
  <b>Can't find the user you're looking for?</b>
  <a href="<?php echo $module->getUrl( 'wizard_create_user.php?usertype=e' .
@@ -146,6 +175,9 @@ if ( $showSearch )
 ?>">Create a new user account</a>
 </p>
 <p>&nbsp;</p>
+<?php
+	}
+?>
 <script type="text/javascript">
 $(function()
 {
@@ -164,6 +196,19 @@ else
 ?>
 <h2><i class="fas fa-users"></i> User Management Wizard</h2>
 <p>&nbsp;</p>
+<?php
+	if ( isset( $_GET['lunf'] ) ) // LDAP user not found
+	{
+?>
+<div class="yellow">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>Resources/images/exclamation_orange.png">
+ <?php echo $module->escapeHTML( $module->getSystemSetting('internal-user-heading') )
+            ?: 'Internal User', ' <em>', $module->escapeHTML( $_GET['lunf'] ); ?></em> not found.
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+?>
 <h3 style="margin-bottom:14px">Enter User Details</h3>
 <?php
 	if ( $showInternal && $showExternal )
@@ -193,8 +238,20 @@ else
 			echo ' pattern="' . $internalUserRegex . '"';
 		}
 ?>>
+<?php
+		if ( $module->getSystemSetting('ldap-search-enable') &&
+		     in_array( $GLOBALS['auth_meth_global'], [ 'ldap', 'ldap_table' ] ) )
+		{
+?>
+      &nbsp;
+      <a href="#" onclick="event.preventDefault();wi=window.innerWidth;$.get('<?php
+			echo $module->getUrl('ldap_search.php');
+      ?>',function(d){simpleDialog(d,'Search',null,(wi>1000)?800:(wi*4/5))})">Search for user...</a>
+<?php
+		}
+?>
       <br>
-      <input type="submit" value="Next">
+      <button type="submit" class="btn btn-sm btn-primaryrc" style="margin-top:12px">Next</button>
     </form>
   </div>
 </div>
@@ -233,7 +290,7 @@ else
                pattern="^(((?<=.)\.)?[A-Za-z0-9!#$%&'*+\/=?^_`|{}~-]+)+@([A-Za-z0-9-]+(\.(?=.))?)+$"></td>
         </tr>
       </table>
-      <input type="submit" value="Next">
+      <button type="submit" class="btn btn-sm btn-primaryrc" style="margin-top:12px">Next</button>
     </form>
   </div>
 </div>
@@ -257,14 +314,23 @@ else
 	}
 ?>
   </select>
-  <input type="submit" value="Go">
+  <button type="submit" class="btn-primaryrc"
+          style="border-radius:var(--bs-border-radius-sm)">Go</button>
  </p>
 </form>
 <p>&nbsp;</p>
+<?php
+	if ( SUPER_USER == 1 || $module->getSystemSetting( 'login-history-visibility' ) != 'A' )
+	{
+?>
 <p>&nbsp;</p>
 <h3 style="margin-bottom:14px">Show Login History</h3>
-<a href="<?php echo $module->getUrl('login_history.php'); ?>">Show login history</a>
+<a href="<?php echo $module->getUrl('login_history.php'); ?>"
+   class="btn btn-sm btn-primaryrc" style="color:#fff;text-decoration:none">Show login history</a>
 <p>&nbsp;</p>
+<?php
+	}
+?>
 
 <script type="text/javascript">
 $(function()

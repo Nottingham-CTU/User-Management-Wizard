@@ -2,18 +2,26 @@
 
 define( 'MODULE_USER_MANAGEMENT_WIZARD', true );
 
+$loginHistoryVisibility = $module->getSystemSetting( 'login-history-visibility' );
+
 // Prohibit access to this page if the user is not allowed to access the wizard.
-if ( ! $module->isAccessAllowed() )
+if ( ! $module->isAccessAllowed() || ( SUPER_USER != 1 && $loginHistoryVisibility == 'A' ) )
 {
 	echo 'You do not have the rights to access this page.';
 	exit;
 }
 
+
 $queryLoginHistory =
 	$module->query( "SELECT `user`, ts, if(`event` = 'LOGIN_SUCCESS', 1, 0) success, ifnull((" .
 	                "SELECT 1 FROM redcap_auth WHERE username = `user` LIMIT 1), 0) tblusr, " .
-	                "ip, browser_name, browser_version FROM redcap_log_view WHERE `event` IN " .
-	                "('LOGIN_SUCCESS','LOGIN_FAIL') ORDER BY ts DESC LIMIT 50", [] );
+	                "ip, browser_name, browser_version FROM redcap_log_view " .
+	                "WHERE `event` IN ('LOGIN_SUCCESS','LOGIN_FAIL') " .
+	                ( SUPER_USER == 1 || $loginHistoryVisibility != 'P' ? '' :
+	                  "SELECT DISTINCT username FROM redcap_user_rights WHERE project_id IN " .
+	                  "(SELECT DISTINCT project_id FROM redcap_user_rights WHERE username = ?) " ) .
+	                "ORDER BY ts DESC LIMIT 50",
+	                SUPER_USER == 1 || $loginHistoryVisibility != 'P' ? [] : [ USERID ] );
 $listLoginHistory = [];
 while( $res = $queryLoginHistory->fetch_assoc() )
 {
