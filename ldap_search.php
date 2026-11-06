@@ -40,29 +40,30 @@ if ( isset( $_POST['search'] ) )
 	                          array_merge([$infoLdap['userattr']],$searchAttrs));
 	if ( $ldapItem = ldap_first_entry( $ldap->conn_id, $ldapSearch ) )
 	{
+		$ldapUserAttr = strtolower( $infoLdap['userattr'] );
 		echo '<table>';
 		do
 		{
 			echo '<tr>';
-			$ldapAttributes = ldap_get_attributes( $ldap->conn_id, $ldapItem );
+			$ldapAttributes = array_change_key_case(
+			                         ldap_get_attributes( $ldap->conn_id, $ldapItem ), CASE_LOWER );
 			unset( $ldapAttributes['count'] );
-			if ( is_array( $ldapAttributes[$infoLdap['userattr']] ) )
+			if ( is_array( $ldapAttributes[ $ldapUserAttr ] ) )
 			{
-				if ( isset( $ldapAttributes[$infoLdap['userattr']]['count'] ) )
+				if ( isset( $ldapAttributes[ $ldapUserAttr ]['count'] ) )
 				{
-					unset( $ldapAttributes[$infoLdap['userattr']]['count'] );
+					unset( $ldapAttributes[ $ldapUserAttr ]['count'] );
 				}
-				$ldapAttributes[$infoLdap['userattr']] =
-					$ldapAttributes[$infoLdap['userattr']][0];
+				$ldapAttributes[ $ldapUserAttr ] = $ldapAttributes[ $ldapUserAttr ][0];
 			}
 			echo '<td style="padding:3px"><input type="button" value="',
-			     $module->escape( $ldapAttributes[$infoLdap['userattr']] ), '" ',
+			     $module->escape( $ldapAttributes[ $ldapUserAttr ] ), '" ',
 			     'onclick="$(\'[name=&quot;username&quot;]\').val($(this).val());$(this).closest(',
 			     '\'[id^=&quot;popup&quot;]\').parent().find(\'.ui-dialog-titlebar button\')',
 			     '.click()"></td>';
 			foreach ( $ldapAttributes as $ldapAttributeName => $ldapAttributeValue )
 			{
-				if ( is_int( $ldapAttributeName ) || $ldapAttributeName == $infoLdap['userattr'] )
+				if ( is_int( $ldapAttributeName ) || $ldapAttributeName == $ldapUserAttr )
 				{
 					continue;
 				}

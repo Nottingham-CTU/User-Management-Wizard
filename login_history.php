@@ -18,8 +18,9 @@ $queryLoginHistory =
 	                "ip, browser_name, browser_version FROM redcap_log_view " .
 	                "WHERE `event` IN ('LOGIN_SUCCESS','LOGIN_FAIL') " .
 	                ( SUPER_USER == 1 || $loginHistoryVisibility != 'P' ? '' :
-	                  "SELECT DISTINCT username FROM redcap_user_rights WHERE project_id IN " .
-	                  "(SELECT DISTINCT project_id FROM redcap_user_rights WHERE username = ?) " ) .
+	                  "AND ( `user` = '[not_valid_username]' OR `user` IN ( SELECT DISTINCT " .
+	                  "username FROM redcap_user_rights WHERE project_id IN (SELECT DISTINCT " .
+	                  "project_id FROM redcap_user_rights WHERE username = ?) ) ) " ) .
 	                "ORDER BY ts DESC LIMIT 50",
 	                SUPER_USER == 1 || $loginHistoryVisibility != 'P' ? [] : [ USERID ] );
 $listLoginHistory = [];
