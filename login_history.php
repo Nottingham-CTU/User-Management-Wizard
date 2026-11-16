@@ -13,10 +13,13 @@ if ( ! $module->isAccessAllowed() || ( SUPER_USER != 1 && $loginHistoryVisibilit
 
 
 $queryLoginHistory =
-	$module->query( "SELECT `user`, ts, if(`event` = 'LOGIN_SUCCESS', 1, 0) success, ifnull((" .
-	                "SELECT 1 FROM redcap_auth WHERE username = `user` LIMIT 1), 0) tblusr, " .
-	                "ip, browser_name, browser_version FROM redcap_log_view " .
-	                "WHERE `event` IN ('LOGIN_SUCCESS','LOGIN_FAIL') " .
+	$module->query( "SELECT `user`, ts, if(`event` = 'LOGIN_SUCCESS', 1, " .
+	                "if(`event` = 'LOGIN_FAIL', 0, 2)) success, ifnull((SELECT 1 " .
+	                "FROM redcap_auth WHERE username = `user` LIMIT 1), 0) tblusr, " .
+	                "ip, browser_name, browser_version FROM redcap_log_view lv " .
+	                "WHERE (`event` IN ('LOGIN_SUCCESS','LOGIN_FAIL') OR (page = " .
+	                "'Authentication/two_factor_verify_code.php' AND ts NOT IN (SELECT ts FROM " .
+	                "redcap_log_view WHERE `event` = 'LOGIN_SUCCESS' AND `user` = lv.user ))) " .
 	                ( SUPER_USER == 1 || $loginHistoryVisibility != 'P' ? '' :
 	                  "AND ( `user` = '[not_valid_username]' OR `user` IN ( SELECT DISTINCT " .
 	                  "username FROM redcap_user_rights WHERE project_id IN (SELECT DISTINCT " .
@@ -86,13 +89,15 @@ foreach ( $listLoginHistory as $infoLoginHistory )
 			$browser .= ' ' . $infoLoginHistory['browser_version'];
 		}
 	}
-	$background = $infoLoginHistory['success'] ? '#ddffee' : '#ffeeee';
+	$background = $infoLoginHistory['success'] == 1 ? '#ddffee' : '#ffeeee';
+	$successText = $infoLoginHistory['success'] == 2 ? ' (invalid 2FA)' : '';
+	$successText = $infoLoginHistory['success'] == 1 ? 'Yes' : ( '<b>No' . $successText . '</b>' );
 ?>
  <tr style="background:<?php echo $background; ?>">
   <td><b><?php echo $username; ?></b></td>
   <td><?php echo $userType; ?></td>
   <td><?php echo date( 'd M Y H:i:s', strtotime( $infoLoginHistory['ts'] ) ); ?></td>
-  <td><?php echo $infoLoginHistory['success'] ? 'Yes' : '<b>No</b>'; ?></td>
+  <td><?php echo $successText; ?></td>
   <td><?php echo $module->escapeHTML( ucfirst( $browser ) ); ?></td>
  </tr>
 <?php
