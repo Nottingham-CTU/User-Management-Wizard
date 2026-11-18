@@ -355,7 +355,9 @@ $(function()
 			$listUsers[] = $infoUser['username'];
 		}
 
+		require_once APP_PATH_DOCROOT . 'Libraries/PEAR/Auth.php';
 		require_once APP_PATH_DOCROOT . 'Libraries/PEAR/Auth/Container/LDAP.php';
+		require_once APP_PATH_WEBTOOLS . 'ldap/ldap_config.php';
 		$infoLdap = $GLOBALS['ldapdsn'];
 		if ( isset( $infoLdap[0] ) && is_array( $infoLdap[0] ) )
 		{
@@ -378,6 +380,8 @@ $(function()
 				// Submit suspend request.
 				$curl = curl_init( self::VERSION_PATH . 'ControlCenter/suspend_user.php' );
 				$this->configureCurl( $curl, $sessionID );
+				curl_setopt( $curl, CURLOPT_COOKIE,
+				                    \Session::getCookieName(false) . '=' . $sessionID );
 				curl_setopt( $curl, CURLOPT_HTTPHEADER, ['X-Requested-With: XMLHttpRequest'] );
 				curl_setopt( $curl, CURLOPT_POST, true );
 				curl_setopt( $curl, CURLOPT_POSTFIELDS,

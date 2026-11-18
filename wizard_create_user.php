@@ -21,7 +21,7 @@ if ( ! empty( $_POST ) )
 		if ( ( $internalUserRegex != '' &&
 		       preg_match( "/$internalUserRegex/i", $_POST['checkusername'] ) ) ||
 		     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
-		                     'username = ?', [ $_POST['checkusername'] ] )->num_rows > 0 )
+		                     'username = ?', [ $_POST['checkusername'] ] )->fetch_assoc() )
 		{
 			echo 'false';
 			exit;
@@ -49,13 +49,22 @@ if ( ! empty( $_POST ) )
 	$_POST['email'] = trim( $_POST['email'] );
 
 	if ( $_POST['firstname'] == '' || $_POST['lastname'] == '' || $_POST['username'] == '' ||
-	     $_POST['email'] == '' ||
-	     $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
-	                     'username = ?', [ $_POST['username'] ] )->num_rows > 0 ||
-	     ( $internalUserRegex != '' &&
-	       ( $userType == 'i' && !preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ||
-	       ( $userType == 'e' && preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ) )
+	     $_POST['email'] == '' )
 	{
+		echo "All of 'First name', 'Last name', 'Username' and 'Email address' must have a value.";
+		exit;
+	}
+	if ( $module->query( 'SELECT 1 FROM redcap_user_information WHERE ' .
+	                     'username = ?', [ $_POST['username'] ] )->fetch_assoc() )
+	{
+		echo 'Username already exists.';
+		exit;
+	}
+	if ( $internalUserRegex != '' &&
+	     ( $userType == 'i' && !preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) ||
+	     ( $userType == 'e' && preg_match( "/$internalUserRegex/i", $_POST['username'] ) ) )
+	{
+		echo 'Username not valid for user type.';
 		exit;
 	}
 
